@@ -25,7 +25,7 @@
 2. git pull origin develop (외부 develop 브랜치 가져와 최신화)
 3. git merge --no-ff feature/기능 (본인이 개발한 기능 단위의 브랜치를 병합)
     3.1 --no-f 옵션을 넣어줘야 기능단위로 커밋 히스토리가 볼 수 있으니 유의..
-4. git brand -d featrue/기능 (본인이 개발했던 브랜치 삭제)
+4. git branch -d featrue/기능 (본인이 개발했던 브랜치 삭제)
     4.1 나중에 다시 수정해야하면 브랜치 다시 생성
 ```
 
