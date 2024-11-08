@@ -24,6 +24,12 @@ def execute_command_callback(command, car_controller):
                 car_controller.lock_vehicle() # 차량잠금
     elif command == "UNLOCK":
         car_controller.unlock_vehicle()  # 차량잠금해제
+    elif command == "SOS":
+        while car_controller.get_speed() > 0:
+            car_controller.brake()
+        car_controller.unlock_left_door()
+        car_controller.unlock_right_door()
+        car_controller.open_trunk()
     elif command == "LEFT_DOOR_LOCK":
         car_controller.lock_left_door() # 왼쪽문 잠금
     elif command == "LEFT_DOOR_UNLOCK":
