@@ -1,4 +1,6 @@
 import threading
+from symbol import and_expr
+
 from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
@@ -15,9 +17,13 @@ def execute_command_callback(command, car_controller):
     elif command == "BRAKE":
         car_controller.brake() # 속도 -10
     elif command == "LOCK":
-        car_controller.lock_vehicle() # 차량잠금
+        if not car_controller.get_engine_status() and \
+            car_controller.get_left_door_status() == "CLOSED" and \
+            car_controller.get_right_door_status() == "CLOSED" and \
+            car_controller.get_trunk_status():
+                car_controller.lock_vehicle() # 차량잠금
     elif command == "UNLOCK":
-        car_controller.unlock_vehicle() # 차량잠금해제
+        car_controller.unlock_vehicle()  # 차량잠금해제
     elif command == "LEFT_DOOR_LOCK":
         car_controller.lock_left_door() # 왼쪽문 잠금
     elif command == "LEFT_DOOR_UNLOCK":
