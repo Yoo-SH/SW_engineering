@@ -10,7 +10,26 @@
 * **feature**(기능 단위의 브랜치)
     - 브랜치 이름: feature/새로운기능
     - 예시: feature/LEFT_DOOR_LOCK
+
 ```
+** 레파지토리 가져오기**
+
+<git clone>
+1. 해당 코드를 저장할 폴더 생성
+2. git init(해당 폴더 경로내에서)
+3. git clone https://github.com/Yoo-SH/SW_engineering.git (해당 폴더 경로내에서)
+    3.1 연결되지 않으면, 확인사항 - 깃 설치, git config user.name
+
+** 커밋 메시지 올리기 **
+
+<git add -> git commit -m "" >
+1. git status (변경사항 확인)
+2. git add 파일or경로 (변경사항 커밋단위에 넣음)
+    2.1 예시) git add .(해당 경로 모두 커밋에 넣음), git add example.py(해당 파일만 커밋에 넣음)
+3. git commit -m "커밋규칙: 커밋내용"
+    3.1 예시) git commit -m "feat: 브레이크 작동하는 함수추가"
+
+
 ** 브랜치 로직 **
 
 < 기능 단위의 브랜치 개발시 커맨드 >
@@ -20,13 +39,14 @@
 4. git commit (규칙에 따라 개발)
     ex) git commit -m "feat: LEFT_DOOR_LOCK 자동 닫힘 기능 추가"
 
-< 기능 브랜치 개발 완료시>
+< 기능 단위의 브랜치 개발 완료시>
 1. git checkout develop (로컬 develop 브랜치 가져옴)
 2. git pull origin develop (외부 develop 브랜치 가져와 최신화)
 3. git merge --no-ff feature/기능 (본인이 개발한 기능 단위의 브랜치를 병합)
     3.1 --no-f 옵션을 넣어줘야 기능단위로 커밋 히스토리가 볼 수 있으니 유의..
 4. git branch -d featrue/기능 (본인이 개발했던 브랜치 삭제)
     4.1 나중에 다시 수정해야하면 브랜치 다시 생성
+5. git push origin develop
 ```
 
 ## `git branch logic 예시`
