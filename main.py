@@ -12,10 +12,51 @@ from gui import CarSimulatorGUI
 def execute_command_callback(command, car_controller):
     if command == "ENGINE_BTN":
         car_controller.toggle_engine() # 시동 ON / OFF
+
     elif command == "ACCELERATE":
-        car_controller.accelerate() # 속도 +10
+        # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
+        if not car_controller.get_engine_status(): #엔진이 꺼진 경우
+            return
+        elif car_controller.get_engine_status(): #엔진이 켜진 경우 
+        
+        # 2. 현재 속도 체크
+
+            # 2-1. 현재 속도가 200 이상이면 가속하지 않음
+            if car_controller.get_speed() > 200:  #car_controller.get_speed() 자동차의 속도 읽기
+                return
+            
+            # 2-2. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경 -> 트렁크가 열려있으면 30km 이상으로 올라가지 않음 -> 트렁크가 잠금 상태일 경우 열리는 것이라 설정되어 속도가 높아진 경우에 열리는 경우가 없을거 같음
+            elif not car_controller.get_trunk_status():
+                if car_controller.get_speed() <= 20: # 현재 속도가 20km 이하인 경우 가속
+                    car_controller.accelerate() # 속도 +10
+                else:
+                    return
+            
+            # 2-3. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금
+            elif car_controller.get_speed() > 20:
+                if car_controller.get_left_door_lock(): # 왼쪽 차 문 잠금이 열린 경우
+                    car_controller.lock_left_door() # 왼쪽 문 잠금장치 잠금
+                elif car_controller.get_right_door_lock():# 오른쪽 차 문 잠금이 열린 경우
+                    car_controller.lock_right_door() # 오른쪽 문 잠금장치 잠금
+                else: # 다 잠겨있으면
+                    car_controller.accelerate() # 속도 +10
+    
+            else: # 모든 경우에 포함 안되면 가속
+                car_controller.accelerate() # 속도 +10
+
     elif command == "BRAKE":
-        car_controller.brake() # 속도 -10
+        # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
+        if not car_controller.get_engine_status(): #엔진이 꺼진 경우
+            return
+        elif car_controller.get_engine_status(): #엔진이 켜진 경우 
+
+        # 2. 현재 속도 체크
+        # 2-1. 현재 속도가 0 이하이면 감속하지 않음 -> 이상인 경우만 감속
+            if car_controller.get_speed() > 0:
+                car_controller.brake() # 속도 -10
+            else: # 이하인 경우 리턴
+                return
+
     elif command == "LOCK":
         if not car_controller.get_engine_status() and \
             car_controller.get_left_door_status() == "CLOSED" and \
