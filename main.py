@@ -1,6 +1,5 @@
 import threading
 from symbol import and_expr
-
 from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
@@ -76,21 +75,46 @@ def execute_command_callback(command, car_controller):
         car_controller.unlock_right_door()
         car_controller.open_trunk()
     elif command == "LEFT_DOOR_LOCK":
-        # 차량이 전체가 잠겨있거나, 왼쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
+
+        # 차량이 전체가 잠겨있거나, 
+        # 왼쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_left_door_lock() == "LOCKED":
             return
+        
         car_controller.lock_left_door() # 왼쪽문 잠금
+
     elif command == "RIGHT_DOOR_LOCK":
-        # 차량이 전체가 잠겨있거나, 오른쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
+        
+        # 차량이 전체가 잠겨있거나, 
+        # 오른쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_right_door_lock == "LOCKED":
             return
+        
         car_controller.lock_right_door() # 오른쪽문 잠금
+        
     elif command == "LEFT_DOOR_UNLOCK":
+        # 차량이 전체가 잠겨있거나,
+        # 왼쪽 문이 이미 잠금해제 되어있거나,
+        # 속도가 20km/h 이상인 경우 기존 상태를 유지.
+        if car_controller.get_lock_status() == "LOCKED" or \
+            car_controller.get_left_door_lock == "UNLOCKED" or \
+            car_controller.get_speed > 20:
+            return
+        
         car_controller.unlock_left_door() # 왼쪽문 잠금해제
     elif command == "RIGHT_DOOR_UNLOCK":
-        car_controller.unlock_left_door() # 오른쪽 잠금해제
+        
+        # 차량이 전체가 잠겨있거나,
+        # 오른쪽 문이 이미 잠금해제 되어있거나,
+        # 속도가 20km/h 이상인 경우 기존 상태를 유지.
+        if car_controller.get_lock_status() == "LOCKED" or \
+            car_controller.get_right_door_lock == "UNLOCKED" or \
+            car_controller.get_speed > 20:
+            return
+
+        car_controller.unlock_right_door() # 오른쪽 잠금해제
     elif command == "LEFT_DOOR_OPEN":
         if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED": # 왼쪽문 잠금이 열린 경우
             car_controller.open_left_door() # 왼쪽문 열기
