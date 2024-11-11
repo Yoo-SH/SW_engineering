@@ -4,6 +4,11 @@ from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
 
+global left_temp #왼쪽 문이 열린 상태에서 문을 잠그는 동작을 저장하는 임시 변수
+global right_temp #오른쪽 문이 열린 상태에서 문을 잠그는 동작을 저장하는 임시 변수
+left_temp = "UNLOCKED"  # 왼쪽 문 상태 초기화
+right_temp = "UNLOCKED"  # 오른쪽 문 상태 초기화
+
 # 로그 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
@@ -11,6 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 # -> 이 함수에서 시그널을 입력받고 처리하는 로직을 구성하면, 알아서 GUI에 연동이 됩니다.
 
 def execute_command_callback(command, car_controller):
+    global left_temp, right_temp
     logging.info(f"명령 수신: {command}")
 
     if command == "ENGINE_BTN":
@@ -27,38 +33,47 @@ def execute_command_callback(command, car_controller):
             logging.info("엔진이 꺼진 상태에서 가속 시도 - 무시됨")
             return
         elif car_controller.get_engine_status(): # 엔진이 켜진 경우 
-        
             # 2. 현재 속도 체크
-
             # 2-1. 현재 속도가 200 이상이면 가속하지 않음
-            if car_controller.get_speed() > 200:  # car_controller.get_speed() 자동차의 속도 읽기
+            if car_controller.get_speed() == 200:  # car_controller.get_speed() 자동차의 속도 읽기
                 logging.info("속도가 이미 200 이상임 - 추가 가속 불가")
                 return
             
-            # 2-2. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
-            elif not car_controller.get_trunk_status():
-                if car_controller.get_speed() <= 20: # 현재 속도가 20km 이하인 경우 가속
-                    car_controller.accelerate() # 속도 +10
-                    logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
-                else:
+            # 2-2. 10km 초과 시 문 닫힘
+            elif car_controller.get_speed() == 10:
+                if car_controller.get_left_door_lock() == "UNLOCKED" or car_controller.get_right_door_lock() == "UNLOCKED":
+                    car_controller.lock_left_door()
+                    car_controller.lock_right_door()
+                    car_controller.accelerate()
+                    logging.info("속도가 10 km/h를 초과하여 문 닫힘 / 가속됨 - 현재 속도: {car_controller.get_speed()} km/h ")
+                    return
+                
+            # 2-3. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
+            elif car_controller.get_speed() == 30: # 현재 속도가 20km 이하인 경우 가속
+                if not car_controller.get_trunk_status():
                     logging.info("트렁크가 열려 있음 - 가속이 30 km/h로 제한됨")
                     return
-            
-            # 2-3. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금
-            elif car_controller.get_speed() > 20:
-                if car_controller.get_left_door_lock(): # 왼쪽 차 문 잠금이 열린 경우
-                    car_controller.lock_left_door() # 왼쪽 문 잠금장치 잠금
-                    logging.info("속도가 20 km/h를 초과하여 왼쪽 문 잠김")
-                elif car_controller.get_right_door_lock(): # 오른쪽 차 문 잠금이 열린 경우
-                    car_controller.lock_right_door() # 오른쪽 문 잠금장치 잠금
-                    logging.info("속도가 20 km/h를 초과하여 오른쪽 문 잠김")
-                else: # 다 잠겨있으면
+                else:
                     car_controller.accelerate() # 속도 +10
                     logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
-    
+                    return
+            
+            # 2-4. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금
+            elif car_controller.get_speed() == 20:
+                if car_controller.get_left_door_lock(): # 왼쪽 차 문 잠금이 해제된 경우
+                    car_controller.lock_left_door() # 왼쪽 문 잠금장치 잠금
+                    logging.info("속도가 20 km/h를 초과하여 왼쪽 문 잠김")
+                if car_controller.get_right_door_lock(): # 오른쪽 차 문 잠금이 해제된 경우 
+                    #elif -> if 이유) elif  사용하면 둘다 해제되어 있는 경우 하나만 잠금
+                    car_controller.lock_right_door() # 오른쪽 문 잠금장치 잠금
+                    logging.info("속도가 20 km/h를 초과하여 오른쪽 문 잠김")
+                if car_controller.get_left_door_lock() == "LOCKED" and car_controller.get_right_door_lock() == "LOCKED": # 다 잠겨있으면
+                    car_controller.accelerate() # 속도 +10
+                    logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
             else: # 모든 경우에 포함 안되면 가속
                 car_controller.accelerate() # 속도 +10
                 logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
+                return
 
     elif command == "BRAKE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
@@ -66,99 +81,144 @@ def execute_command_callback(command, car_controller):
             logging.info("엔진이 꺼진 상태에서 브레이크 시도 - 무시됨")
             return
         elif car_controller.get_engine_status(): # 엔진이 켜진 경우 
-
-            # 2. 현재 속도 체크
-            # 2-1. 현재 속도가 0 이하이면 감속하지 않음
-            if car_controller.get_speed() > 0:
-                car_controller.brake() # 속도 -10
-                logging.info(f"감속됨 - 현재 속도: {car_controller.get_speed()} km/h")
-            else: # 이하인 경우 리턴
-                logging.info("속도가 이미 0임 - 추가 감속 불가")
-                return
+            car_controller.brake() # 속도 -10
+            logging.info(f"감속됨 - 현재 속도: {car_controller.get_speed()} km/h")
+            return
 
     elif command == "LOCK":
         if not car_controller.get_engine_status() and \
             car_controller.get_left_door_status() == "CLOSED" and \
             car_controller.get_right_door_status() == "CLOSED" and \
             car_controller.get_trunk_status():
+                car_controller.lock_left_door()
+                car_controller.lock_right_door()
                 car_controller.lock_vehicle() # 차량잠금
                 logging.info("차량 잠김")
+                return
+
     elif command == "UNLOCK":
-        car_controller.unlock_vehicle()  # 차량잠금해제
-        logging.info("차량 잠금 해제")
+        if car_controller.get_lock_status() == True:
+            car_controller.unlock_vehicle()  # 차량잠금해제
+            logging.info("차량 잠금 해제")
+            logging.info(f"현재 잠금 상태: {car_controller.get_lock_status()}")
+            return
+
+    #to discuss - SOS의 우선 순위 높이는 게 좋을 지 고민 - 전체 locked 상태에서도 하는 게 좋을지
     elif command == "SOS":
         while car_controller.get_speed() > 0:
             car_controller.brake()
         logging.info("비상 브레이크 작동 - 속도 0 km/h로 감소")
         car_controller.unlock_left_door()
         car_controller.unlock_right_door()
+        car_controller.open_left_door()
+        car_controller.open_right_door()
         car_controller.open_trunk()
-        logging.info("SOS 작업 완료 - 문 잠금 해제 및 트렁크 열림")
+        logging.info("SOS 작업 완료 - 문 잠금 해제, 문 열기 및 트렁크 열림")
+        return
+    
     elif command == "LEFT_DOOR_LOCK":
+        #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금 시도
+        if car_controller.get_lock_status() == "UNLOCKED" and \
+            car_controller.get_left_door_status() == "OPEN":
+                left_temp = "LOCKED"
+                return
+        
         # 차량이 전체가 잠겨있거나, 
         # 왼쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_left_door_lock() == "LOCKED":
-            logging.info("왼쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
-            return
+                logging.info("왼쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
+                return
         
         car_controller.lock_left_door() # 왼쪽문 잠금
         logging.info("왼쪽 문 잠김")
 
     elif command == "RIGHT_DOOR_LOCK":
+        #차량 잠금이 열려있고, 오른쪽 문이 열린 상태에서 잠금 시도
+        if right_temp == "UNLOCKED" and \
+            car_controller.get_right_door_status() == "OPEN":
+                right_temp = "LOCKED"
+                return
+        
         # 차량이 전체가 잠겨있거나, 
         # 오른쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_right_door_lock == "LOCKED":
-            logging.info("오른쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
-            return
+                logging.info("오른쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
+                return
         
         car_controller.lock_right_door() # 오른쪽문 잠금
         logging.info("오른쪽 문 잠김")
         
     elif command == "LEFT_DOOR_UNLOCK":
+        #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금해제 시도
+        if left_temp == "UNLOCKED" and \
+            car_controller.get_left_door_status() == "OPEN":
+                left_temp = "UNLOCKED"
+                return
+        
         # 차량이 전체가 잠겨있거나,
         # 왼쪽 문이 이미 잠금해제 되어있거나,
-        # 속도가 20km/h 이상인 경우 기존 상태를 유지.
+        # 속도가 20km/h 초과인 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
-            car_controller.get_left_door_lock == "UNLOCKED" or \
-            car_controller.get_speed > 20:
-            logging.info("왼쪽 문 잠금 해제 시도 무시됨 - 조건이 충족되지 않음")
-            return
+            car_controller.get_left_door_lock() == "UNLOCKED" or \
+            car_controller.get_speed() > 20:
+                logging.info("왼쪽 문 잠금 해제 시도 무시됨 - 조건이 충족되지 않음")
+                return
         
         car_controller.unlock_left_door() # 왼쪽문 잠금해제
         logging.info("왼쪽 문 잠금 해제됨")
+
     elif command == "RIGHT_DOOR_UNLOCK":
+        #차량 잠금이 열려있고, 오른쪽 문이 열린 상태에서 잠금해제 시도
+        if car_controller.get_lock_status() == "UNLOCKED" and \
+            car_controller.get_right_door_status() == "OPEN":
+                right_temp = "UNLOCKED"
+                return
+        
         # 차량이 전체가 잠겨있거나,
         # 오른쪽 문이 이미 잠금해제 되어있거나,
-        # 속도가 20km/h 이상인 경우 기존 상태를 유지.
+        # 속도가 20km/h 초과인 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
-            car_controller.get_right_door_lock == "UNLOCKED" or \
-            car_controller.get_speed > 20:
+            car_controller.get_right_door_lock() == "UNLOCKED" or \
+            car_controller.get_speed() > 20:
             logging.info("오른쪽 문 잠금 해제 시도 무시됨 - 조건이 충족되지 않음")
             return
 
         car_controller.unlock_right_door() # 오른쪽 잠금해제
         logging.info("오른쪽 문 잠금 해제됨")
+
     elif command == "LEFT_DOOR_OPEN":
         if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED": # 왼쪽문 잠금이 열린 경우
             car_controller.open_left_door() # 왼쪽문 열기
+            left_temp = "UNLOCKED"
             logging.info("왼쪽 문 열림")
     elif command == "RIGHT_DOOR_OPEN":
         if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED": # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
+            right_temp = "UNLOCKED"
             logging.info("오른쪽 문 열림")
     elif command == "LEFT_DOOR_CLOSE":
         if car_controller.get_left_door_status() == "OPEN": # 왼쪽문이 열린 경우
             car_controller.close_left_door() # 왼쪽문 닫기
             logging.info("왼쪽 문 닫힘")
+            if left_temp == "LOCKED" or car_controller.get_speed()>20:
+                car_controller.lock_left_door()
+                logging.info("왼쪽 문 잠김")
     elif command == "RIGHT_DOOR_CLOSE":
         if car_controller.get_right_door_status() == "OPEN": # 오른쪽문이 열린 경우
             car_controller.close_right_door() # 오른쪽문 닫기
             logging.info("오른쪽 문 닫힘")
-    elif command == "TRUNK_OPEN":
-        car_controller.open_trunk() # 트렁크 열기
-        logging.info("트렁크 열림")
+            if right_temp == "LOCKED" or car_controller.get_speed()>20:
+                car_controller.lock_right_door()
+                logging.info("오른쪽 문 잠김")
+    elif command == "TRUNK_OPEN": 
+        if car_controller.get_lock_status() == "UNLOCKED" and car_controller.get_trunk_status() == "CLOSE" and car_controller.get_speed() <= 30: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우 
+            car_controller.open_trunk() # 트렁크 열기 
+    elif command == "TRUNK_CLOSE": 
+    # car_controller.get_lock_status() == "LOCKED" 이 부분 삭제했습니다.
+        if car_controller.get_trunk_status() == "OPEN": #차량이 잠긴 상태이면서 트렁크가 열려 있는 경우
+            car_controller.close_trunk() # 트렁크 닫기
 
 # 파일 경로를 입력받는 함수
 # -> 가급적 수정하지 마세요.
