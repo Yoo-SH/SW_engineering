@@ -13,7 +13,7 @@ def execute_command_callback(command, car_controller):
         if car_controller.get_lock_status(): # 차량 전체 잠금이 Locked 인 경우
             return # 엔진을 가동하지 않는다.
         elif not car_controller.get_lock_status(): #차량 전체 잠금이 Unlocked 인 경우
-            car_controller.toggle_engine # 시동 ON / OFF
+            car_controller.toggle_engine() # 시동 ON / OFF
     
 
     elif command == "ACCELERATE":
