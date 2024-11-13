@@ -1,5 +1,7 @@
 import threading
 import logging
+import unittest
+
 from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
@@ -241,9 +243,17 @@ def file_input_thread(gui):
         # 파일 경로를 받은 후 GUI의 mainloop에서 실행할 수 있도록 큐에 넣음
         gui.window.after(0, lambda: gui.process_commands(file_path))
 
+class TestCarController(unittest.TestCase):
+    def setUp(self):
+        self.car = Car()
+        self.car_controller = CarController(self.car)
+
 # 메인 실행
 # -> 가급적 main login은 수정하지 마세요.
 if __name__ == "__main__":
+
+    unittest.main(exit=False)
+
     car = Car()
     car_controller = CarController(car)
 
