@@ -248,6 +248,25 @@ class TestCarController(unittest.TestCase):
         self.car = Car()
         self.car_controller = CarController(self.car)
 
+    def test_engine_when_unlocked(self):
+        self.car_controller.unlock_vehicle()
+        self.assertFalse(self.car_controller.get_engine_status())
+
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertFalse(self.car_controller.get_engine_status())
+
+    def test_engine_when_locked(self):
+        self.car_controller.lock_vehicle()
+
+        self.assertFalse(self.car_controller.get_engine_status())
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertFalse(self.car_controller.get_engine_status())
+
+
+
 # 메인 실행
 # -> 가급적 main login은 수정하지 마세요.
 if __name__ == "__main__":
