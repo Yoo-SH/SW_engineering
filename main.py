@@ -1,7 +1,6 @@
 import threading
-import logging
 import unittest
-
+import logging
 from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
@@ -49,6 +48,10 @@ def execute_command_callback(command, car_controller):
                     car_controller.accelerate()
                     logging.info("속도가 10 km/h를 초과하여 문 닫힘 / 가속됨 - 현재 속도: {car_controller.get_speed()} km/h ")
                     return
+                else:
+                    car_controller.accelerate()
+                    logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
+                    return
                 
             # 2-3. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
             elif car_controller.get_speed() == 30: # 현재 속도가 20km 이하인 경우 가속
@@ -92,11 +95,11 @@ def execute_command_callback(command, car_controller):
             car_controller.get_left_door_status() == "CLOSED" and \
             car_controller.get_right_door_status() == "CLOSED" and \
             car_controller.get_trunk_status():
-                car_controller.lock_left_door()
-                car_controller.lock_right_door()
-                car_controller.lock_vehicle() # 차량잠금
-                logging.info("차량 잠김")
-                return
+            car_controller.lock_left_door()
+            car_controller.lock_right_door()
+            car_controller.lock_vehicle() # 차량잠금
+            logging.info("차량 잠김")
+            return
 
     elif command == "UNLOCK":
         if car_controller.get_lock_status() == True:
@@ -191,17 +194,11 @@ def execute_command_callback(command, car_controller):
         logging.info("오른쪽 문 잠금 해제됨")
 
     elif command == "LEFT_DOOR_OPEN":
-        if car_controller.get_lock_status() == "LOCKED":
-            logging.info("왼쪽 문 열기 시도 무시됨 - 차량 전체가 잠겨 있음")
-            return
         if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 왼쪽문 잠금이 열린 경우
             car_controller.open_left_door() # 왼쪽문 열기
             left_temp = "UNLOCKED"
             logging.info("왼쪽 문 열림")
     elif command == "RIGHT_DOOR_OPEN":
-        if car_controller.get_lock_status() == "LOCKED":
-            logging.info("왼쪽 문 열기 시도 무시됨 - 차량 전체가 잠겨 있음")
-            return
         if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
             right_temp = "UNLOCKED"
@@ -243,6 +240,23 @@ def file_input_thread(gui):
         # 파일 경로를 받은 후 GUI의 mainloop에서 실행할 수 있도록 큐에 넣음
         gui.window.after(0, lambda: gui.process_commands(file_path))
 
+# 메인 실행
+# -> 가급적 main login은 수정하지 마세요.
+if __name__ == "__main__":
+    car = Car()
+    car_controller = CarController(car)
+
+    # GUI는 메인 스레드에서 실행
+    gui = CarSimulatorGUI(car_controller, lambda command: execute_command_callback(command, car_controller))
+
+    # 파일 입력 스레드는 별도로 실행하여, GUI와 병행 처리
+    input_thread = threading.Thread(target=file_input_thread, args=(gui,))
+    input_thread.daemon = True  # 메인 스레드가 종료되면 서브 스레드도 종료되도록 설정
+    input_thread.start()
+
+    # GUI 시작 (메인 스레드에서 실행)
+    gui.start()
+
 class TestCarController(unittest.TestCase):
     def setUp(self):
         self.car = Car()
@@ -264,25 +278,110 @@ class TestCarController(unittest.TestCase):
         self.assertFalse(self.car_controller.get_engine_status())
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertFalse(self.car_controller.get_engine_status())
+        
+class TestCarDoorLockSystem(unittest.TestCase):
+
+    def setUp(self):
+        self.car = Car()  # Car 클래스 인스턴스 생성
+        self.car_controller = CarController(self.car)  # CarController 인스턴스 생성
+        
+        # 차량 속도를 0으로 설정
+        while self.car_controller.get_speed() > 0:
+            execute_command_callback("BRAKE", self.car_controller)
+        
+        # 모든 문을 닫고 잠금 해제
+        if self.car_controller.get_left_door_status() == "OPEN":
+            execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        if self.car_controller.get_right_door_status() == "OPEN":
+            execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
+
+        # 차량 잠금 해제
+        if self.car_controller.get_lock_status():
+            execute_command_callback("UNLOCK", self.car_controller)
+
+        # 왼쪽, 오른쪽 문이 잠금 해제 상태인지 확인
+        if self.car_controller.get_left_door_lock() == "LOCKED":
+            self.car_controller.unlock_left_door()
+        if self.car_controller.get_right_door_lock() == "LOCKED":
+            self.car_controller.unlock_right_door()
 
 
+    # 1. 전체 잠금 on/off 상태 테스트
+    def test_lock_unlock_system(self):
 
-# 메인 실행
-# -> 가급적 main login은 수정하지 마세요.
+        # 전체 잠금을 설정한 후 문을 열 수 없는지 확인
+        execute_command_callback("LOCK", self.car_controller)
+        self.assertTrue(self.car_controller.get_lock_status())
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+
+        # 전체 잠금을 해제한 후 문을 열 수 있는지 확인
+        execute_command_callback("UNLOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        execute_command_callback("LEFT_DOOR_UNLOCK", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+
+    # 2. 각 속도 조건에서 문 열기/닫기 시도
+    def test_door_operations_at_various_speeds(self):
+        # 0km: 문을 열고 닫는 데 제한이 없는지 확인
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+
+        # 10km: 문을 열고 닫는 데 제한이 없는지 확인
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("ACCELERATE", self.car_controller)  # 속도 +10km
+        self.assertEqual(self.car_controller.get_speed(), 10)
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+
+        # 20km 초과 (30km): 문이 잠기고 열리지 않아야 함
+        execute_command_callback("ACCELERATE", self.car_controller)  # 속도 +10km
+        execute_command_callback("ACCELERATE", self.car_controller)  # 속도 +10km (합계 30km)
+        self.assertEqual(self.car_controller.get_speed(), 30)
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")  # 열리지 않음
+        self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")  # 문이 잠겨야 함
+
+    # 3. 문이 잠겨있거나 잠금 해제된 상태 테스트
+    def test_door_lock_unlock_status(self):
+        # 문이 잠금 해제된 상태에서 문 열기 시도
+        self.car_controller.unlock_left_door()
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+        
+
+        # 문을 닫고 나서 잠근 후, 다시 문 열기 시도
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")  # 문이 닫힌 상태 확인
+
+        # 문이 잠겨있는 상태에서 문 열기 시도
+        self.car_controller.lock_left_door()
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")  # 열리지 않아야 함
+
+    # 4. 문이 이미 열려있거나 닫혀있는 상태에서의 동작 확인
+    def test_open_close_when_already_open_or_closed(self):
+        # 문이 이미 열려있는 상태에서 다시 열기 시도
+        self.car_controller.unlock_left_door()
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)  # 이미 열린 상태에서 열기 시도
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")  # 상태 유지
+
+        # 문이 이미 닫혀있는 상태에서 다시 닫기 시도
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)  # 이미 닫힌 상태에서 닫기 시도
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")  # 상태 유지
+
+        # 테스트 코드 실행
 if __name__ == "__main__":
-
-    unittest.main(exit=False)
-
-    car = Car()
-    car_controller = CarController(car)
-
-    # GUI는 메인 스레드에서 실행
-    gui = CarSimulatorGUI(car_controller, lambda command: execute_command_callback(command, car_controller))
-
-    # 파일 입력 스레드는 별도로 실행하여, GUI와 병행 처리
-    input_thread = threading.Thread(target=file_input_thread, args=(gui,))
-    input_thread.daemon = True  # 메인 스레드가 종료되면 서브 스레드도 종료되도록 설정
-    input_thread.start()
-
-    # GUI 시작 (메인 스레드에서 실행)
-    gui.start()
+    unittest.main()
