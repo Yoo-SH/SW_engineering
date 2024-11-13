@@ -41,9 +41,9 @@ def execute_command_callback(command, car_controller):
             
             # 2-2. 10km 초과 시 문 닫힘
             elif car_controller.get_speed() == 10:
-                if car_controller.get_left_door_lock() == "UNLOCKED" or car_controller.get_right_door_lock() == "UNLOCKED":
-                    car_controller.lock_left_door()
-                    car_controller.lock_right_door()
+                if car_controller.get_left_door_status() == "Opened" or car_controller.get_right_door_status() == "Opened":
+                    car_controller.close_left_door()
+                    car_controller.close_right_door()
                     car_controller.accelerate()
                     logging.info("속도가 10 km/h를 초과하여 문 닫힘 / 가속됨 - 현재 속도: {car_controller.get_speed()} km/h ")
                     return
@@ -189,12 +189,18 @@ def execute_command_callback(command, car_controller):
         logging.info("오른쪽 문 잠금 해제됨")
 
     elif command == "LEFT_DOOR_OPEN":
-        if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED": # 왼쪽문 잠금이 열린 경우
+        if car_controller.get_lock_status() == "LOCKED":
+            logging.info("왼쪽 문 열기 시도 무시됨 - 차량 전체가 잠겨 있음")
+            return
+        if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 왼쪽문 잠금이 열린 경우
             car_controller.open_left_door() # 왼쪽문 열기
             left_temp = "UNLOCKED"
             logging.info("왼쪽 문 열림")
     elif command == "RIGHT_DOOR_OPEN":
-        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED": # 오른쪽문 잠금이 열린 경우
+        if car_controller.get_lock_status() == "LOCKED":
+            logging.info("왼쪽 문 열기 시도 무시됨 - 차량 전체가 잠겨 있음")
+            return
+        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
             right_temp = "UNLOCKED"
             logging.info("오른쪽 문 열림")
@@ -202,14 +208,14 @@ def execute_command_callback(command, car_controller):
         if car_controller.get_left_door_status() == "OPEN": # 왼쪽문이 열린 경우
             car_controller.close_left_door() # 왼쪽문 닫기
             logging.info("왼쪽 문 닫힘")
-            if left_temp == "LOCKED" or car_controller.get_speed()>20:
+            if left_temp == "LOCKED":
                 car_controller.lock_left_door()
                 logging.info("왼쪽 문 잠김")
     elif command == "RIGHT_DOOR_CLOSE":
         if car_controller.get_right_door_status() == "OPEN": # 오른쪽문이 열린 경우
             car_controller.close_right_door() # 오른쪽문 닫기
             logging.info("오른쪽 문 닫힘")
-            if right_temp == "LOCKED" or car_controller.get_speed()>20:
+            if right_temp == "LOCKED":
                 car_controller.lock_right_door()
                 logging.info("오른쪽 문 잠김")
     elif command == "TRUNK_OPEN": 
