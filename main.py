@@ -284,27 +284,6 @@ class TestCarDoorLockSystem(unittest.TestCase):
     def setUp(self):
         self.car = Car()  # Car 클래스 인스턴스 생성
         self.car_controller = CarController(self.car)  # CarController 인스턴스 생성
-        
-        # 차량 속도를 0으로 설정
-        while self.car_controller.get_speed() > 0:
-            execute_command_callback("BRAKE", self.car_controller)
-        
-        # 모든 문을 닫고 잠금 해제
-        if self.car_controller.get_left_door_status() == "OPEN":
-            execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
-        if self.car_controller.get_right_door_status() == "OPEN":
-            execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
-
-        # 차량 잠금 해제
-        if self.car_controller.get_lock_status():
-            execute_command_callback("UNLOCK", self.car_controller)
-
-        # 왼쪽, 오른쪽 문이 잠금 해제 상태인지 확인
-        if self.car_controller.get_left_door_lock() == "LOCKED":
-            self.car_controller.unlock_left_door()
-        if self.car_controller.get_right_door_lock() == "LOCKED":
-            self.car_controller.unlock_right_door()
-
 
     # 1. 전체 잠금 on/off 상태 테스트
     def test_lock_unlock_system(self):
