@@ -361,6 +361,52 @@ class TestCarDoorLockSystem(unittest.TestCase):
         execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)  # 이미 닫힌 상태에서 닫기 시도
         self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")  # 상태 유지
 
+        
+class TestTempLockSystem(unittest.TestCase):
+
+    def setUp(self):
+        self.car = Car()
+        self.car_controller = CarController(self.car)
+
+    # 1. 왼쪽 문이 열린 상태에서 잠금 시도 시 temp_lock을 통해 잠금이 동작되는지 확인
+    def test_left_door_temp_lock(self):
+        global left_temp
+
+        # 왼쪽 문 열기
+        execute_command_callback("LEFT_DOOR_UNLOCK", self.car_controller)
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+
+        # 열린 상태에서 잠금 시도하면 실제로 잠금되지 않고 temp만 잠금 되어야함-> temp_lock에 저장
+        execute_command_callback("LEFT_DOOR_LOCK", self.car_controller)
+        self.assertEqual(left_temp, "LOCKED")
+        self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")  
+
+        # 왼쪽 문 닫기가 적용되어야함-> temp_lock 적용
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
+
+    # 2. 오른쪽 문이 열린 상태에서 잠금 시도 시 temp_lock을 통해 오른쪽 잠금이 동작되는지 확인
+    def test_right_door_temp_lock(self):
+        global right_temp
+
+        # 오른쪽 문 열기
+        execute_command_callback("RIGHT_DOOR_UNLOCK", self.car_controller)
+        execute_command_callback("RIGHT_DOOR_OPEN", self.car_controller)
+        self.assertEqual(self.car_controller.get_right_door_status(), "OPEN")
+
+        # 열린 상태에서 잠금 시도하면 실제로 잠금되지 않고 temp만 잠금 되어야함-> temp_lock에 저장
+        execute_command_callback("RIGHT_DOOR_LOCK", self.car_controller)
+        self.assertEqual(right_temp, "LOCKED")
+        self.assertEqual(self.car_controller.get_right_door_lock(), "UNLOCKED") 
+
+        # 오른쪽 문 닫기 -> temp_lock 적용
+        execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
+        self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
+
+
         # 테스트 코드 실행
 if __name__ == "__main__":
     unittest.main()
