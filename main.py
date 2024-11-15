@@ -199,7 +199,7 @@ def execute_command_callback(command, car_controller):
             left_temp = "UNLOCKED"
             logging.info("왼쪽 문 열림")
     elif command == "RIGHT_DOOR_OPEN":
-        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
+        if car_controller.get_right_dor_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
             right_temp = "UNLOCKED"
             logging.info("오른쪽 문 열림")
@@ -256,6 +256,51 @@ if __name__ == "__main__":
 
     # GUI 시작 (메인 스레드에서 실행)
     gui.start()
+
+class TestSOS(unittest.TestCase):
+    """
+    1. 차를 정지(speed=0)시켜야 함
+    2. 모든 문의 잠금 상태를 열림(left_door_lock="UNLOCKED"&right_door_lock="UNLOCKED")으로
+    3. 모든 문을 열어야 함(left_door_status="OPEN"&right_door_status="OPEN")
+    4. 트렁크가 열려야 함(trunk_status=false)
+    """
+
+    def setUp(self):
+        self.car = Car()
+        self.controller = CarController(self.car)
+
+    def test_sos_normal(self):
+        """
+        가속상황에서
+        SOS 기능 정상 작동 테스트: 정지, 모든 문/트렁크 열림
+        """
+        self.controller.unlock_vehicle()
+        self.controller.toggle_engine()
+        self.controller.accelerate()
+
+        execute_command_callback("SOS", self.controller)
+
+        self.assertEqual(self.car.speed, 0)
+        self.assertEqual(self.car.left_door_lock, "UNLOCKED")
+        self.assertEqual(self.car.right_door_lock, "UNLOCKED")
+        self.assertEqual(self.car.left_door_status, "OPEN")
+        self.assertEqual(self.car.right_door_status, "OPEN")
+        self.assertFalse(self.car.trunk_status)
+
+    def test_sos_already_stopped(self):
+        """
+        정지상황에서
+        SOS 기능: 이미 정지 상태일 때도 모든 문/트렁크 열림
+        """
+
+        execute_command_callback("SOS", self.controller)
+
+        self.assertEqual(self.car.speed, 0)
+        self.assertEqual(self.car.left_door_lock, "UNLOCKED")
+        self.assertEqual(self.car.right_door_lock, "UNLOCKED")
+        self.assertEqual(self.car.left_door_status, "OPEN")
+        self.assertEqual(self.car.right_door_status, "OPEN")
+        self.assertFalse(self.car.trunk_status)
 
 class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
     def setUp(self):
