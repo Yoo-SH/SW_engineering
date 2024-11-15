@@ -758,7 +758,8 @@ class TestTempLockSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
 
-class TestCarControllerTrunk(unittest.TestCase):
+
+class TestCarTrunk(unittest.TestCase):
     def setUp(self):
         self.car = Car()
         self.car_controller = CarController(self.car)
@@ -788,7 +789,7 @@ class TestCarControllerTrunk(unittest.TestCase):
         execute_command_callback("ACCELERATE", self.car_controller)  # 트렁크 열린 상태에서 제한 속도 이내 가속 시도
         self.assertEqual(self.car_controller.get_speed(), 30)  # 속도가 10 증가했는지 확인
 
-# 메인 실행
+    # 메인 실행
 # -> 가급적 main login은 수정하지 마세요.
 # 테스트 코드 실행
 if __name__ == "__main__":
