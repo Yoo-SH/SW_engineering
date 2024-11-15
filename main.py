@@ -591,7 +591,7 @@ class TestEngineToggle(unittest.TestCase):
         self.assertTrue(self.car_controller.get_engine_status())
         
         execute_command_callback("ENGINE_BTN", self.car_controller)
-        self.assertTrue(self.car_controller.get_engine_status())
+        self.assertFalse(self.car_controller.get_engine_status())
         
         
 class TestCarDoorLockSystem(unittest.TestCase):
@@ -722,6 +722,6 @@ class TestTempLockSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
 
 
-        # 테스트 코드 실행
+# 테스트 코드 실행
 if __name__ == "__main__":
     unittest.main()
