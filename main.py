@@ -28,6 +28,8 @@ def execute_command_callback(command, car_controller):
             if car_controller.get_speed() == 0:
                 car_controller.toggle_engine() # 시동 ON / OFF
                 logging.info(f"엔진 상태 변경: {'ON' if car_controller.get_engine_status() else 'OFF'}")
+            else:
+                logging.info("가속 중인 상태에서 엔진 정지 시도 - 무시됨")
     
     elif command == "ACCELERATE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
@@ -573,7 +575,7 @@ class TestEngineToggle(unittest.TestCase):
         self.assertTrue(self.car_controller.get_engine_status())
         
         execute_command_callback("ENGINE_BTN", self.car_controller)
-        self.assertTrue(self.car_controller.get_engine_status())
+        self.assertFalse(self.car_controller.get_engine_status())
         
         
 class TestCarDoorLockSystem(unittest.TestCase):
@@ -704,8 +706,12 @@ class TestTempLockSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
 
 
+<<<<<<< HEAD
     # 메인 실행
 # -> 가급적 main login은 수정하지 마세요.
+=======
+# 테스트 코드 실행
+>>>>>>> 65e7d6dad484a67f8aa4ebb524a08371fac378eb
 if __name__ == "__main__":
     car = Car()
     car_controller = CarController(car)
