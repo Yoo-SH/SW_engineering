@@ -199,7 +199,7 @@ def execute_command_callback(command, car_controller):
             left_temp = "UNLOCKED"
             logging.info("왼쪽 문 열림")
     elif command == "RIGHT_DOOR_OPEN":
-        if car_controller.get_right_dor_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
+        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
             right_temp = "UNLOCKED"
             logging.info("오른쪽 문 열림")
