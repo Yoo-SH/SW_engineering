@@ -160,7 +160,7 @@ def execute_command_callback(command, car_controller):
         
     elif command == "LEFT_DOOR_UNLOCK":
         #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금해제 시도
-        if left_temp == "UNLOCKED" and \
+        if car_controller.get_lock_status() == "UNLOCKED" and \
             car_controller.get_left_door_status() == "OPEN":
             left_temp = "UNLOCKED"
             return
@@ -725,6 +725,9 @@ class TestTempLockSystem(unittest.TestCase):
 # -> 가급적 main login은 수정하지 마세요.
 # 테스트 코드 실행
 if __name__ == "__main__":
+    
+    unittest.main(exit=False)
+
     car = Car()
     car_controller = CarController(car)
 
@@ -737,5 +740,4 @@ if __name__ == "__main__":
     input_thread.start()
 
     # GUI 시작 (메인 스레드에서 실행)
-    unittest.main(exit=False)
     gui.start()
