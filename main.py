@@ -416,8 +416,8 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 20)
         #문이 제대로 닫혀있나 확인
-        self.assertEqual(self.car_controller.get_left_door_lock(), "CLOSED")
-        self.assertEqual(self.car_controller.get_left_door_lock(), "CLOSED")
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        self.assertEqual(self.car_controller.get_Right_door_status(), "CLOSED")
 
 
         execute_command_callback("ACCELERATE", self.car_controller)
