@@ -25,8 +25,9 @@ def execute_command_callback(command, car_controller):
             logging.info("잠긴 상태에서 엔진 시작 시도 - 무시됨")
             return # 엔진을 가동하지 않는다.
         elif not car_controller.get_lock_status(): # 차량 전체 잠금이 Unlocked 인 경우
-            car_controller.toggle_engine() # 시동 ON / OFF
-            logging.info(f"엔진 상태 변경: {'ON' if car_controller.get_engine_status() else 'OFF'}")
+            if car_controller.get_speed() == 0:
+                car_controller.toggle_engine() # 시동 ON / OFF
+                logging.info(f"엔진 상태 변경: {'ON' if car_controller.get_engine_status() else 'OFF'}")
     
     elif command == "ACCELERATE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
@@ -531,11 +532,12 @@ class TestBrake(unittest.TestCase): #감속 테스트 케이스
         self.assertEqual(self.car_controller.get_speed(), 10)
 
 
-class TestCarController(unittest.TestCase):
+class TestEngineToggle(unittest.TestCase):
     def setUp(self):
-        self.car = Car()
-        self.car_controller = CarController(self.car)
-
+        self.car = Car()  # Car 클래스 인스턴스 생성
+        self.car_controller = CarController(self.car)  # CarController 인스턴스 생성
+   
+    # 차량 전체 잠금 해제 상태일 때, 엔진 토글이 작동하는 지 확인
     def test_engine_when_unlocked(self):
         self.car_controller.unlock_vehicle()
         self.assertFalse(self.car_controller.get_engine_status())
@@ -546,12 +548,49 @@ class TestCarController(unittest.TestCase):
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertFalse(self.car_controller.get_engine_status())
 
+    # 차량 전체 잠금 상태일때, 엔진 토글이 작동하지 않음을 확인.
     def test_engine_when_locked(self):
         self.car_controller.lock_vehicle()
-
         self.assertFalse(self.car_controller.get_engine_status())
+        
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertFalse(self.car_controller.get_engine_status())
+
+    # 차량이 가속 중 일때, 엔진 토글이 작동하지 않음을 확인(엔진이 OFF 되는지)
+    def test_engine_when_accelerating(self):
+        self.car_controller.unlock_vehicle()
+        self.assertFalse(self.car_controller.get_engine_status())
+        
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        self.car_controller.accelerate()
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+
+    # 차량이 가속 후 정지 했을 때, 엔진 토글이 작동하는지 확인
+    def test_engine_when_stop(self):
+
+        self.car_controller.unlock_vehicle()
+        self.assertFalse(self.car_controller.get_engine_status())
+        
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        self.car_controller.accelerate()
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+
+        self.car_controller.brake()
+        self.assertTrue(self.car_controller.get_engine_status())
+        
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        self.assertTrue(self.car_controller.get_engine_status())
+        
         
 class TestCarDoorLockSystem(unittest.TestCase):
 
