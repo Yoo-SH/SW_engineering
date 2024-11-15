@@ -241,22 +241,6 @@ def file_input_thread(gui):
         # 파일 경로를 받은 후 GUI의 mainloop에서 실행할 수 있도록 큐에 넣음
         gui.window.after(0, lambda: gui.process_commands(file_path))
 
-# 메인 실행
-# -> 가급적 main login은 수정하지 마세요.
-if __name__ == "__main__":
-    car = Car()
-    car_controller = CarController(car)
-
-    # GUI는 메인 스레드에서 실행
-    gui = CarSimulatorGUI(car_controller, lambda command: execute_command_callback(command, car_controller))
-
-    # 파일 입력 스레드는 별도로 실행하여, GUI와 병행 처리
-    input_thread = threading.Thread(target=file_input_thread, args=(gui,))
-    input_thread.daemon = True  # 메인 스레드가 종료되면 서브 스레드도 종료되도록 설정
-    input_thread.start()
-
-    # GUI 시작 (메인 스레드에서 실행)
-    gui.start()
 
 class TestSOS(unittest.TestCase):
     """
@@ -720,6 +704,20 @@ class TestTempLockSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")  # 문이 닫히면 잠금 적용됨
 
 
-        # 테스트 코드 실행
+    # 메인 실행
+# -> 가급적 main login은 수정하지 마세요.
 if __name__ == "__main__":
-    unittest.main()
+    car = Car()
+    car_controller = CarController(car)
+
+    # GUI는 메인 스레드에서 실행
+    gui = CarSimulatorGUI(car_controller, lambda command: execute_command_callback(command, car_controller))
+
+    # 파일 입력 스레드는 별도로 실행하여, GUI와 병행 처리
+    input_thread = threading.Thread(target=file_input_thread, args=(gui,))
+    input_thread.daemon = True  # 메인 스레드가 종료되면 서브 스레드도 종료되도록 설정
+    input_thread.start()
+
+    # GUI 시작 (메인 스레드에서 실행)
+    unittest.main(exit=False)
+    gui.start()
