@@ -347,6 +347,23 @@ class TestLock(unittest.TestCase):
         execute_command_callback("LOCK", self.controller)
         self.assertFalse(self.car.lock)
 
+class TestUnlock(unittest.TestCase):
+
+    def setUp(self):
+        self.car = Car()
+        self.controller = CarController(self.car)
+
+    def test_unlock_normal(self):
+        """UNLOCK 정상 조건: 잠김 상태 -> 잠금 해제"""
+        self.controller.lock_vehicle()
+        execute_command_callback("UNLOCK", self.controller)
+        self.assertFalse(self.car.lock)
+
+    def test_unlock_already_unlocked(self):
+        """UNLOCK: 이미 잠금 해제 상태 -> 상태 변화 없음"""
+        execute_command_callback("UNLOCK", self.controller)
+        self.assertFalse(self.car.lock)
+
 
 class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
     def setUp(self):
