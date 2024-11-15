@@ -160,7 +160,7 @@ def execute_command_callback(command, car_controller):
         
     elif command == "LEFT_DOOR_UNLOCK":
         #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금해제 시도
-        if left_temp == "UNLOCKED" and \
+        if car_controller.get_lock_status() == "UNLOCKED" and \
             car_controller.get_left_door_status() == "OPEN":
             left_temp = "UNLOCKED"
             return
