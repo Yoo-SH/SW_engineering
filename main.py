@@ -28,6 +28,8 @@ def execute_command_callback(command, car_controller):
             if car_controller.get_speed() == 0:
                 car_controller.toggle_engine() # 시동 ON / OFF
                 logging.info(f"엔진 상태 변경: {'ON' if car_controller.get_engine_status() else 'OFF'}")
+            else:
+                logging.info("가속 중인 상태에서 엔진 정지 시도 - 무시됨")
     
     elif command == "ACCELERATE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
