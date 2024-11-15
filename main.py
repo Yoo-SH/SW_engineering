@@ -725,6 +725,9 @@ class TestTempLockSystem(unittest.TestCase):
 # -> 가급적 main login은 수정하지 마세요.
 # 테스트 코드 실행
 if __name__ == "__main__":
+    
+    unittest.main(exit=False)
+
     car = Car()
     car_controller = CarController(car)
 
@@ -737,5 +740,4 @@ if __name__ == "__main__":
     input_thread.start()
 
     # GUI 시작 (메인 스레드에서 실행)
-    unittest.main(exit=False)
     gui.start()
