@@ -30,19 +30,19 @@ def execute_command_callback(command, car_controller):
                 logging.info(f"엔진 상태 변경: {'ON' if car_controller.get_engine_status() else 'OFF'}")
             else:
                 logging.info("가속 중인 상태에서 엔진 정지 시도 - 무시됨")
-    
+
     elif command == "ACCELERATE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
         if not car_controller.get_engine_status(): # 엔진이 꺼진 경우
             logging.info("엔진이 꺼진 상태에서 가속 시도 - 무시됨")
             return
-        elif car_controller.get_engine_status(): # 엔진이 켜진 경우 
+        elif car_controller.get_engine_status(): # 엔진이 켜진 경우
             # 2. 현재 속도 체크
             # 2-1. 현재 속도가 200 이상이면 가속하지 않음
             if car_controller.get_speed() == 200:  # car_controller.get_speed() 자동차의 속도 읽기
                 logging.info("속도가 이미 200 이상임 - 추가 가속 불가")
                 return
-            
+
             # 2-2. 10km 초과 시 문 닫힘
             elif car_controller.get_speed() == 10:
                 if car_controller.get_left_door_status() == "Opened" or car_controller.get_right_door_status() == "Opened":
@@ -55,7 +55,7 @@ def execute_command_callback(command, car_controller):
                     car_controller.accelerate()
                     logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
                     return
-                
+
             # 2-3. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
             elif car_controller.get_speed() == 30: # 현재 속도가 20km 이하인 경우 가속
                 if not car_controller.get_trunk_status():
@@ -65,13 +65,13 @@ def execute_command_callback(command, car_controller):
                     car_controller.accelerate() # 속도 +10
                     logging.info(f"가속됨 - 현재 속도: {car_controller.get_speed()} km/h")
                     return
-            
+
             # 2-4. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금 후 가속
             elif car_controller.get_speed() == 20:
                 if car_controller.get_left_door_lock(): # 왼쪽 차 문 잠금이 해제된 경우
                     car_controller.lock_left_door() # 왼쪽 문 잠금장치 잠금
                     logging.info("속도가 20 km/h를 초과하여 왼쪽 문 잠김")
-                if car_controller.get_right_door_lock(): # 오른쪽 차 문 잠금이 해제된 경우 
+                if car_controller.get_right_door_lock(): # 오른쪽 차 문 잠금이 해제된 경우
                     #elif -> if 이유) elif  사용하면 둘다 해제되어 있는 경우 하나만 잠금
                     car_controller.lock_right_door() # 오른쪽 문 잠금장치 잠금
                     logging.info("속도가 20 km/h를 초과하여 오른쪽 문 잠김")
@@ -88,7 +88,7 @@ def execute_command_callback(command, car_controller):
         if not car_controller.get_engine_status(): # 엔진이 꺼진 경우
             logging.info("엔진이 꺼진 상태에서 브레이크 시도 - 무시됨")
             return
-        elif car_controller.get_engine_status(): # 엔진이 켜진 경우 
+        elif car_controller.get_engine_status(): # 엔진이 켜진 경우
             car_controller.brake() # 속도 -10
             logging.info(f"감속됨 - 현재 속도: {car_controller.get_speed()} km/h")
             return
@@ -123,21 +123,21 @@ def execute_command_callback(command, car_controller):
         car_controller.open_trunk()
         logging.info("SOS 작업 완료 - 문 잠금 해제, 문 열기 및 트렁크 열림")
         return
-    
+
     elif command == "LEFT_DOOR_LOCK":
         #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금 시도
         if left_temp  == "UNLOCKED" and \
             car_controller.get_left_door_status() == "OPEN":
             left_temp = "LOCKED"
             return
-        
-        # 차량이 전체가 잠겨있거나, 
+
+        # 차량이 전체가 잠겨있거나,
         # 왼쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_left_door_lock() == "LOCKED":
             logging.info("왼쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
             return
-        
+
         car_controller.lock_left_door() # 왼쪽문 잠금
         logging.info("왼쪽 문 잠김")
 
@@ -147,24 +147,24 @@ def execute_command_callback(command, car_controller):
             car_controller.get_right_door_status() == "OPEN":
             right_temp = "LOCKED"
             return
-        
-        # 차량이 전체가 잠겨있거나, 
+
+        # 차량이 전체가 잠겨있거나,
         # 오른쪽 문이 이미 잠겨 있는 경우 기존 상태를 유지.
         if car_controller.get_lock_status() == "LOCKED" or \
             car_controller.get_right_door_lock == "LOCKED":
             logging.info("오른쪽 문 잠금 시도 무시됨 - 이미 잠겨 있거나 차량 전체가 잠겨 있음")
             return
-        
+
         car_controller.lock_right_door() # 오른쪽문 잠금
         logging.info("오른쪽 문 잠김")
-        
+
     elif command == "LEFT_DOOR_UNLOCK":
         #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금해제 시도
         if car_controller.get_lock_status() == "UNLOCKED" and \
             car_controller.get_left_door_status() == "OPEN":
             left_temp = "UNLOCKED"
             return
-        
+
         # 차량이 전체가 잠겨있거나,
         # 왼쪽 문이 이미 잠금해제 되어있거나,
         # 속도가 20km/h 초과인 경우 기존 상태를 유지.
@@ -173,7 +173,7 @@ def execute_command_callback(command, car_controller):
             car_controller.get_speed() > 20:
             logging.info("왼쪽 문 잠금 해제 시도 무시됨 - 조건이 충족되지 않음")
             return
-        
+
         car_controller.unlock_left_door() # 왼쪽문 잠금해제
         logging.info("왼쪽 문 잠금 해제됨")
 
@@ -183,7 +183,7 @@ def execute_command_callback(command, car_controller):
             car_controller.get_right_door_status() == "OPEN":
             right_temp = "UNLOCKED"
             return
-        
+
         # 차량이 전체가 잠겨있거나,
         # 오른쪽 문이 이미 잠금해제 되어있거나,
         # 속도가 20km/h 초과인 경우 기존 상태를 유지.
@@ -220,10 +220,10 @@ def execute_command_callback(command, car_controller):
             if right_temp == "LOCKED":
                 car_controller.lock_right_door()
                 logging.info("오른쪽 문 잠김")
-    elif command == "TRUNK_OPEN": 
-        if car_controller.get_lock_status() == "UNLOCKED" and car_controller.get_trunk_status() == "CLOSE" and car_controller.get_speed() <= 30: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우 
-            car_controller.open_trunk() # 트렁크 열기 
-    elif command == "TRUNK_CLOSE": 
+    elif command == "TRUNK_OPEN":
+        if car_controller.get_lock_status() == "UNLOCKED" and car_controller.get_trunk_status() == "CLOSE" and car_controller.get_speed() <= 30: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우
+            car_controller.open_trunk() # 트렁크 열기
+    elif command == "TRUNK_CLOSE":
     # car_controller.get_lock_status() == "LOCKED" 이 부분 삭제했습니다.
         if car_controller.get_trunk_status() == "OPEN": #차량이 잠긴 상태이면서 트렁크가 열려 있는 경우
             car_controller.close_trunk() # 트렁크 닫기
@@ -254,18 +254,18 @@ class TestSOS(unittest.TestCase):
 
     def setUp(self):
         self.car = Car()
-        self.controller = CarController(self.car)
+        self.car_controller = CarController(self.car)
 
     def test_sos_normal(self):
         """
         가속상황에서
         SOS 기능 정상 작동 테스트: 정지, 모든 문/트렁크 열림
         """
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("ACCELERATE", self.controller)
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("ACCELERATE", self.car_controller)
 
-        execute_command_callback("SOS", self.controller)
+        execute_command_callback("SOS", self.car_controller)
 
         self.assertEqual(self.car.speed, 0)
         self.assertEqual(self.car.left_door_lock, "UNLOCKED")
@@ -280,7 +280,7 @@ class TestSOS(unittest.TestCase):
         SOS 기능: 이미 정지 상태일 때도 모든 문/트렁크 열림
         """
 
-        execute_command_callback("SOS", self.controller)
+        execute_command_callback("SOS", self.car_controller)
 
         self.assertEqual(self.car.speed, 0)
         self.assertEqual(self.car.left_door_lock, "UNLOCKED")
@@ -296,65 +296,65 @@ class TestLock(unittest.TestCase):
 
     def setUp(self):
         self.car = Car()
-        self.controller = CarController(self.car)
+        self.car_controller = CarController(self.car)
 
     def test_lock_normal(self):
         """정상적인 LOCK 조건: 엔진 꺼짐, 모든 문/트렁크 닫힘 -> 잠김"""
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("LEFT_DOOR_CLOSE", self.controller)
-        execute_command_callback("RIGHT_DOOR_CLOSE", self.controller)
-        execute_command_callback("RIGHT_DOOR_CLOSE", self.controller)
-        execute_command_callback("TRUNK_CLOSE", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
+        execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
+        execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
+        execute_command_callback("TRUNK_CLOSE", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
     def test_lock_engine_on(self):
         """LOCK 실패 조건: 엔진 켜짐 -> 잠기지 않음"""
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("LOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("LOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
     def test_lock_left_door_open(self):
         """LOCK 실패 조건: 왼쪽 문 열림 -> 잠기지 않음"""
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("LEFT_DOOR_OPEN", self.controller)
-        execute_command_callback("LOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("LEFT_DOOR_OPEN", self.car_controller)
+        execute_command_callback("LOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
     def test_lock_right_door_open(self):
         """LOCK 실패 조건: 오른쪽 문 열림 -> 잠기지 않음"""
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("RIGHT_DOOR_OPEN", self.controller)
-        execute_command_callback("LOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("RIGHT_DOOR_OPEN", self.car_controller)
+        execute_command_callback("LOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
     def test_lock_trunk_open(self):
         """LOCK 실패 조건: 트렁크 열림 -> 잠기지 않음"""
-        execute_command_callback("UNLOCK", self.controller)
-        execute_command_callback("ENGINE_BTN", self.controller)
-        execute_command_callback("TRUNK_OPEN", self.controller)
-        execute_command_callback("LOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
+        execute_command_callback("TRUNK_OPEN", self.car_controller)
+        execute_command_callback("LOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
 class TestUnlock(unittest.TestCase):
 
     def setUp(self):
         self.car = Car()
-        self.controller = CarController(self.car)
+        self.car_controller = CarController(self.car)
 
     def test_unlock_normal(self):
         """UNLOCK 정상 조건: 잠김 상태 -> 잠금 해제"""
-        execute_command_callback("LOCK", self.controller)
-        execute_command_callback("UNLOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("LOCK", self.car_controller)
+        execute_command_callback("UNLOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
     def test_unlock_already_unlocked(self):
         """UNLOCK: 이미 잠금 해제 상태 -> 상태 변화 없음"""
-        execute_command_callback("UNLOCK", self.controller)
-        self.assertFalse(self.controller.get_lock_status())
+        execute_command_callback("UNLOCK", self.car_controller)
+        self.assertFalse(self.car_controller.get_lock_status())
 
 
 class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
@@ -364,19 +364,19 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
 
     #test case1 : 시스템의 상태 여부 확인 / 10km 이상 속도 올라가면 문 닫기
     def test_Accelerate_when_unlocked(self):
-        
-        # 전체 잠금이 되어 있는 경우 
+
+        # 전체 잠금이 되어 있는 경우
         execute_command_callback("LOCK", self.car_controller)
         self.assertTrue(self.car_controller.get_lock_status())
         execute_command_callback("ACCELERATE", self.car_controller)
         #속도 변화가 없어야 한다
-        self.assertEqual(self.car_controller.get_speed(), 0) 
+        self.assertEqual(self.car_controller.get_speed(), 0)
 
         # 전체 잠금이 해제 되어 있는 경우
         execute_command_callback("UNLOCK", self.car_controller)
         self.assertFalse(self.car_controller.get_lock_status())
         execute_command_callback("ENGINE_BTN", self.car_controller)
-        
+
         #속도가 높아져야 한다 1 (현재 속도가 0인 경우)
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 10)
@@ -394,8 +394,8 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
 
         #속도 변화가 없어야 한다
         execute_command_callback("ACCELERATE", self.car_controller)
-        self.assertEqual(self.car_controller.get_speed(), 0) 
-        
+        self.assertEqual(self.car_controller.get_speed(), 0)
+
         execute_command_callback("ENGINE_BTN", self.car_controller)
         #속도가 높아져야 한다 1 (현재 속도가 0인 경우)
         execute_command_callback("ACCELERATE", self.car_controller)
@@ -410,7 +410,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
 
         execute_command_callback("UNLOCK", self.car_controller)
         execute_command_callback("ENGINE_BTN", self.car_controller)
-        
+
         #문의 상태 확인 (현재 속도가 20km/h인 경우)
         for i in range(2):
             execute_command_callback("ACCELERATE", self.car_controller)
@@ -440,7 +440,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             #트렁크 닫힌 경우 속도 변함
             execute_command_callback("ACCELERATE", self.car_controller)
             self.assertEqual(self.car_controller.get_speed(), 50)
-        
+
         else:
             #트렁크 열린 경우 속도 안 변함
             execute_command_callback("ACCELERATE", self.car_controller)
@@ -451,7 +451,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             self.assertEqual(self.car_controller.get_trunk_status() , "TRUNK_CLOSE")
             execute_command_callback("ACCELERATE", self.car_controller)
             self.assertEqual(self.car_controller.get_speed(), 40)
-            
+
         for i in range(16):
             execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 200)
@@ -467,19 +467,19 @@ class TestBrake(unittest.TestCase): #감속 테스트 케이스
 
     #test case1 : 시스템의 상태 여부 확인 / 속도에 따른 여부 확인
     def test_brake_when_unlocked(self):
-        
-        # 전체 잠금이 되어 있는 경우 
+
+        # 전체 잠금이 되어 있는 경우
         execute_command_callback("LOCK", self.car_controller)
         self.assertTrue(self.car_controller.get_lock_status())
         execute_command_callback("BRAKE", self.car_controller)
         #속도 변화가 없어야 한다
-        self.assertEqual(self.car_controller.get_speed(), 0) 
+        self.assertEqual(self.car_controller.get_speed(), 0)
 
         # 전체 잠금이 해제 되어 있는 경우
         execute_command_callback("UNLOCK", self.car_controller)
         self.assertFalse(self.car_controller.get_lock_status())
         execute_command_callback("ENGINE_BTN", self.car_controller)
-        
+
         #속도의 변화가 없어야 한다 (현재 속도가 0인 경우)
         execute_command_callback("BRAKE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 0)
@@ -497,16 +497,16 @@ class TestBrake(unittest.TestCase): #감속 테스트 케이스
 
     #test case2 : 엔진의 상태 여부 확인 / 속도에 따른 여부 확인
     def test_brake_when_engine(self):
-        # 엔진이 꺼져 있는 경우 
+        # 엔진이 꺼져 있는 경우
         execute_command_callback("UNLOCK", self.car_controller)
         execute_command_callback("BRAKE", self.car_controller)
         #속도 변화가 없어야 한다
-        self.assertEqual(self.car_controller.get_speed(), 0) 
+        self.assertEqual(self.car_controller.get_speed(), 0)
 
         # 엔진이 켜져 있는 경우
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertTrue(self.car_controller.get_engine_status())
-        
+
         #속도가 줄어들어야 한다 1 (현재 속도가 0인 경우)
         execute_command_callback("BRAKE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 0)
@@ -543,7 +543,7 @@ class TestEngineToggle(unittest.TestCase):
     def test_engine_when_locked(self):
         self.car_controller.lock_vehicle()
         self.assertFalse(self.car_controller.get_engine_status())
-        
+
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertFalse(self.car_controller.get_engine_status())
 
@@ -551,7 +551,7 @@ class TestEngineToggle(unittest.TestCase):
     def test_engine_when_accelerating(self):
         self.car_controller.unlock_vehicle()
         self.assertFalse(self.car_controller.get_engine_status())
-        
+
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertTrue(self.car_controller.get_engine_status())
 
@@ -566,7 +566,7 @@ class TestEngineToggle(unittest.TestCase):
 
         self.car_controller.unlock_vehicle()
         self.assertFalse(self.car_controller.get_engine_status())
-        
+
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertTrue(self.car_controller.get_engine_status())
 
@@ -578,11 +578,11 @@ class TestEngineToggle(unittest.TestCase):
 
         self.car_controller.brake()
         self.assertTrue(self.car_controller.get_engine_status())
-        
+
         execute_command_callback("ENGINE_BTN", self.car_controller)
         self.assertFalse(self.car_controller.get_engine_status())
-        
-        
+
+
 class TestCarDoorLockSystem(unittest.TestCase):
 
     def setUp(self):
@@ -714,7 +714,7 @@ class TestCarDoorLockSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")  # 상태 유지
 
 
-        
+
 class TestTempLockSystem(unittest.TestCase):
 
     def setUp(self):
@@ -733,7 +733,7 @@ class TestTempLockSystem(unittest.TestCase):
         # 열린 상태에서 잠금 시도하면 실제로 잠금되지 않고 temp만 잠금 되어야함-> temp_lock에 저장
         execute_command_callback("LEFT_DOOR_LOCK", self.car_controller)
         self.assertEqual(left_temp, "LOCKED")
-        self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")  
+        self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")
 
         # 왼쪽 문 닫기가 적용되어야함-> temp_lock 적용
         execute_command_callback("LEFT_DOOR_CLOSE", self.car_controller)
@@ -752,7 +752,7 @@ class TestTempLockSystem(unittest.TestCase):
         # 열린 상태에서 잠금 시도하면 실제로 잠금되지 않고 temp만 잠금 되어야함-> temp_lock에 저장
         execute_command_callback("RIGHT_DOOR_LOCK", self.car_controller)
         self.assertEqual(right_temp, "LOCKED")
-        self.assertEqual(self.car_controller.get_right_door_lock(), "UNLOCKED") 
+        self.assertEqual(self.car_controller.get_right_door_lock(), "UNLOCKED")
 
         # 오른쪽 문 닫기 -> temp_lock 적용
         execute_command_callback("RIGHT_DOOR_CLOSE", self.car_controller)
@@ -764,8 +764,6 @@ class TestTempLockSystem(unittest.TestCase):
 # -> 가급적 main login은 수정하지 마세요.
 # 테스트 코드 실행
 if __name__ == "__main__":
-    
-    unittest.main(exit=False)
 
     car = Car()
     car_controller = CarController(car)
@@ -780,3 +778,5 @@ if __name__ == "__main__":
 
     # GUI 시작 (메인 스레드에서 실행)
     gui.start()
+
+    unittest.main(exit=False)
