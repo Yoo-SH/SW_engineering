@@ -323,7 +323,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         self.car = Car()
         self.car_controller = CarController(self.car)
 
-    #test case1 : 시스템의 상태 여부 확인 / 10km 이상 속도 올라가면 문 닫기
+    #test case1 : 시스템의 상태 여부 확인하고 가속하는지 / 10km/h 초과 속도 올라가면 문 닫기
     def test_Accelerate_when_unlocked(self):
 
         # 전체 잠금이 되어 있는 경우
@@ -345,8 +345,13 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         #속도가 높아져야 한다 2 (현재 속도가 10인 경우)
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 20)
+        
+        #시속이 10km 초과한 경우이므로 문이 닫혀있어야 한다.
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
+  
 
-    #test case2 : 엔진의 상태 여부 확인
+    #test case2 : 엔진의 상태 여부 확인하고 가속하는지 / 10km/h 이상 속도 올라가면 문 닫기
     def test_Accelerate_when_engine(self):
 
         # 엔진이 꺼져있는 경우
@@ -366,6 +371,10 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 20)
 
+        #시속이 10km 초과한 경우이므로 문이 닫혀있어야 한다.
+        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+        self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
+
     #test case3 : 문의 상태 확인 / 트렁크의 상태 확인 / 최대 제한 속도 확인 / 속도에 따른 여부 확인
     def test_Accelerate_when_trunk_door(self):
 
@@ -380,9 +389,9 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
 
-
-        execute_command_callback("ACCELERATE", self.car_controller)
-        #문 잠금 상태 확인 후 잠그기
+        #수정 전 코드 내용인데 어차피 가속 함수에서 문 잠긴 경우 안잠긴 경우 확인 하니까 비교 구문없어도 될듯
+        
+        """
         if(self.car_controller.get_left_door_lock() == "LOCKED" or self.car_controller.get_right_door_lock() == "LOCKED"):
             #문 잠긴 경우 속도 변함
             execute_command_callback("ACCELERATE", self.car_controller)
@@ -395,8 +404,19 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
             execute_command_callback("ACCELERATE", self.car_controller)
             self.assertEqual(self.car_controller.get_speed(), 40)
+        """
 
-        #현재 속도가 30km/h인 경우 트렁크 확인
+        #문 잠금 상태 확인 후 잠그기 / 20km/h 일때 가속한 경우
+        execute_command_callback("ACCELERATE", self.car_controller)
+        self.assertEqual(self.car_controller.get_speed(), 30)
+
+        #문은 잠김 상태여야 한다.
+        self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")
+        self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
+    
+
+        #기존 트렁크 코드
+        """
         if(self.car_controller.get_trunk_status() == "TRUNK_CLOSE"):
             #트렁크 닫힌 경우 속도 변함
             execute_command_callback("ACCELERATE", self.car_controller)
@@ -412,7 +432,21 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             self.assertEqual(self.car_controller.get_trunk_status() , "TRUNK_CLOSE")
             execute_command_callback("ACCELERATE", self.car_controller)
             self.assertEqual(self.car_controller.get_speed(), 40)
+        """
+        #수정된 코드
+        #현재 속도가 30km/h인 경우 트렁크 확인 후 가속
 
+        #트렁크 열린 경우 속도 안 변함
+        execute_command_callback("ACCELERATE", self.car_controller)
+        self.assertEqual(self.car_controller.get_speed(), 30)
+        
+        #트렁크 닫고 다시 가속하면 속도 변함
+        execute_command_callback("TRUNK_CLOSE", self.car_controller)
+        self.assertEqual(self.car_controller.get_trunk_status(), "TRUNK_CLOSE")
+        execute_command_callback("ACCELERATE", self.car_controller)
+        self.assertEqual(self.car_controller.get_speed(), 40)
+
+        #최대 제한 속도에 도달한 경우 확인
         for i in range(16):
             execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 200)
