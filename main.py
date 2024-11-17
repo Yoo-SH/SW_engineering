@@ -154,11 +154,11 @@ def execute_command_callback(command, car_controller):
         car_controller.unlock_right_door() # 오른쪽 잠금해제
 
     elif command == "LEFT_DOOR_OPEN":
-        if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 왼쪽문 잠금이 열린 경우
+        if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED": # 왼쪽문 잠금이 열린 경우
             car_controller.open_left_door() # 왼쪽문 열기
             left_temp = "UNLOCKED"
     elif command == "RIGHT_DOOR_OPEN":
-        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED" and car_controller.get_speed() < 20: # 오른쪽문 잠금이 열린 경우
+        if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED": # 오른쪽문 잠금이 열린 경우
             car_controller.open_right_door() # 오른쪽문 열기
             right_temp = "UNLOCKED"
     elif command == "LEFT_DOOR_CLOSE":
