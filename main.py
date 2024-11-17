@@ -30,40 +30,30 @@ def execute_command_callback(command, car_controller):
         elif car_controller.get_engine_status(): # 엔진이 켜진 경우
             # 2. 현재 속도 체크
             # 2-1. 현재 속도가 200 이상이면 가속하지 않음
-            if car_controller.get_speed() == 200:  # car_controller.get_speed() 자동차의 속도 읽기
+            if car_controller.get_speed() >= 200:  # car_controller.get_speed() 자동차의 속도 읽기
                 return
 
             # 2-2. 10km 초과 시 문 닫힘
-            elif car_controller.get_speed() == 10:
-                if car_controller.get_left_door_status() == "Opened" or car_controller.get_right_door_status() == "Opened":
+            if car_controller.get_speed() >= 10:
+                if car_controller.get_left_door_status() == "Opened":
                     car_controller.close_left_door()
+                if car_controller.get_right_door_status() == "Opened":
                     car_controller.close_right_door()
-                    car_controller.accelerate()
-                    return
-                else:
-                    car_controller.accelerate()
-                    return
 
-            # 2-3. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
-            elif car_controller.get_speed() == 30: # 현재 속도가 20km 이하인 경우 가속
-                if not car_controller.get_trunk_status():
-                    return
-                else:
-                    car_controller.accelerate() # 속도 +10
-                    return
-
-            # 2-4. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금 후 가속
-            elif car_controller.get_speed() == 20:
+            # 2-3. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금
+            if car_controller.get_speed() >= 20:
                 if car_controller.get_left_door_lock(): # 왼쪽 차 문 잠금이 해제된 경우
                     car_controller.lock_left_door() # 왼쪽 문 잠금장치 잠금
                 if car_controller.get_right_door_lock(): # 오른쪽 차 문 잠금이 해제된 경우
-                    #elif -> if 이유) elif  사용하면 둘다 해제되어 있는 경우 하나만 잠금
                     car_controller.lock_right_door() # 오른쪽 문 잠금장치 잠금
-                if car_controller.get_left_door_lock() == "LOCKED" and car_controller.get_right_door_lock() == "LOCKED": # 다 잠겨있으면
-                    car_controller.accelerate() # 속도 +10
-            else: # 모든 경우에 포함 안되면 가속
-                car_controller.accelerate() # 속도 +10
-                return
+
+            # 2-4. 트렁크가 열려있다면 최대 제한 속도를 30km로 변경
+            if car_controller.get_speed() >= 30: # 현재 속도가 30km 이상이면 가속하지 않음
+                if not car_controller.get_trunk_status():
+                    return
+
+            car_controller.accelerate() # 속도 +10
+            return
 
     elif command == "BRAKE":
         # 1. 엔진 체크 / OFF 상태면 바로 함수 종료
@@ -380,16 +370,19 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
 
         execute_command_callback("UNLOCK", self.car_controller)
         execute_command_callback("ENGINE_BTN", self.car_controller)
+        #트렁크 상태에 따른 가속 명령을 확인 하기위해 열고 가속
+        execute_command_callback("TRUNK_OPEN", self.car_controller)
 
         #문의 상태 확인 (현재 속도가 20km/h인 경우)
         for i in range(2):
             execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 20)
+
         #문이 제대로 닫혀있나 확인
         self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
 
-        #수정 전 코드 내용인데 어차피 가속 함수에서 문 잠긴 경우 안잠긴 경우 확인 하니까 비교 구문없어도 될듯
+        #수정 전 코드 내용인데 어차피 가속 함수에서 문 잠긴 경우 안잠긴 경우 확인 하고 문 잠그니까 테스트 코드에선 비교 구문+문 잠그는 명령 없어도 될듯
         
         """
         if(self.car_controller.get_left_door_lock() == "LOCKED" or self.car_controller.get_right_door_lock() == "LOCKED"):
@@ -405,7 +398,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
             execute_command_callback("ACCELERATE", self.car_controller)
             self.assertEqual(self.car_controller.get_speed(), 40)
         """
-
+        #수정 후 코드
         #문 잠금 상태 확인 후 잠그기 / 20km/h 일때 가속한 경우
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 30)
@@ -436,7 +429,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         #수정된 코드
         #현재 속도가 30km/h인 경우 트렁크 확인 후 가속
 
-        #트렁크 열린 경우 속도 안 변함
+        #현재 트렁크 열린 경우 이므로 속도 안 변함
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 30)
         
