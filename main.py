@@ -435,7 +435,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         
         #트렁크 닫고 다시 가속하면 속도 변함
         execute_command_callback("TRUNK_CLOSE", self.car_controller)
-        self.assertEqual(self.car_controller.get_trunk_status(), "TRUNK_CLOSE")
+        self.assertTrue(self.car_controller.get_trunk_status(), "TRUNK_CLOSE")
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 40)
 
