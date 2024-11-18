@@ -382,23 +382,6 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
 
-        #수정 전 코드 내용인데 어차피 가속 함수에서 문 잠긴 경우 안잠긴 경우 확인 하고 문 잠그니까 테스트 코드에선 비교 구문+문 잠그는 명령 없어도 될듯
-        
-        """
-        if(self.car_controller.get_left_door_lock() == "LOCKED" or self.car_controller.get_right_door_lock() == "LOCKED"):
-            #문 잠긴 경우 속도 변함
-            execute_command_callback("ACCELERATE", self.car_controller)
-            self.assertEqual(self.car_controller.get_speed(), 40)
-        else:
-            #문 잠김 열린 경우 잠그고 속도 변경
-            execute_command_callback("LEFT_DOOR_UNLOCK", self.car_controller)
-            self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")
-            execute_command_callback("RIGHT_DOOR_UNLOCK", self.car_controller)
-            self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
-            execute_command_callback("ACCELERATE", self.car_controller)
-            self.assertEqual(self.car_controller.get_speed(), 40)
-        """
-        #수정 후 코드
         #문 잠금 상태 확인 후 잠그기 / 20km/h 일때 가속한 경우
         execute_command_callback("ACCELERATE", self.car_controller)
         self.assertEqual(self.car_controller.get_speed(), 30)
@@ -406,27 +389,7 @@ class TestAccelerate(unittest.TestCase): #가속 테스트 케이스
         #문은 잠김 상태여야 한다.
         self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")
         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
-    
 
-        #기존 트렁크 코드
-        """
-        if(self.car_controller.get_trunk_status() == "TRUNK_CLOSE"):
-            #트렁크 닫힌 경우 속도 변함
-            execute_command_callback("ACCELERATE", self.car_controller)
-            self.assertEqual(self.car_controller.get_speed(), 50)
-
-        else:
-            #트렁크 열린 경우 속도 안 변함
-            execute_command_callback("ACCELERATE", self.car_controller)
-            self.assertEqual(self.car_controller.get_speed(), 30)
-
-            #트렁크 닫고 다시 가속하면 속도 변함
-            execute_command_callback("TRUNK_CLOSE", self.car_controller)
-            self.assertEqual(self.car_controller.get_trunk_status() , "TRUNK_CLOSE")
-            execute_command_callback("ACCELERATE", self.car_controller)
-            self.assertEqual(self.car_controller.get_speed(), 40)
-        """
-        #수정된 코드
         #현재 속도가 30km/h인 경우 트렁크 확인 후 가속
 
         #현재 트렁크 열린 경우 이므로 속도 안 변함
