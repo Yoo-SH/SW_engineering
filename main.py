@@ -174,7 +174,7 @@ def execute_command_callback(command, car_controller):
     elif command == "TRUNK_OPEN":
         if not car_controller.get_lock_status() and \
             car_controller.get_trunk_status() == True and \
-                car_controller.get_speed() <= 30: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우
+                car_controller.get_speed() == 0: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우
             car_controller.open_trunk() # 트렁크 열기
     elif command == "TRUNK_CLOSE":
         if car_controller.get_trunk_status() == False: #차량이 잠긴 상태이면서 트렁크가 열려 있는 경우
