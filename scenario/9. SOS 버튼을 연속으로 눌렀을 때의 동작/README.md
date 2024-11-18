@@ -19,6 +19,6 @@ speed: 0
 vehicle: unLocked
 leftDoor: open
 rightDoor: open
-leftDoorLock: unUocked
-righDoorLock: unLocked
+leftDoorLock: unLocked
+rightDoorLock: unLocked
 Trunk: opened

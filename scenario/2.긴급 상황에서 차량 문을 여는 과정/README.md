@@ -18,6 +18,6 @@ LOCK(차량 잠금) ⇒ 문 열림, 트렁크 열림 등의 조건으로 문이 
 - vehicle: unLocked
 - leftDoor: open
 - rightDoor: open
-- leftDoorLock: unUocked
-- righDoorLock: unLocked
+- leftDoorLock: unLocked
+- rightDoorLock: unLocked
 - Trunk: opened

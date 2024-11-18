@@ -25,5 +25,5 @@ LOCK(차량 잠금) ⇒  차량을 잠금 상태로 전환.
 - leftDoor: closed
 - rightDoor: closed
 - leftDoorLock: locked
-- righDoorLock: locked
+- rightDoorLock: locked
 - Trunk: locked
