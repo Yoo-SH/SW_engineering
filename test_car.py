@@ -272,7 +272,7 @@ class TestAccelerate(unittest.TestCase):
         execute_command_callback("ACCELERATE", self.car_controller)
 
         # Then: 속도 변화 없음
-        self.assertEqual(self.car.speed(), 0)
+        self.assertEqual(self.car_controller.get_speed(), 0)
 
     def test_accelerate_trunk_open(self):
         """트렁크 열린 상태에서 가속, 속도 제한(30) 테스트"""
