@@ -9,6 +9,12 @@ global right_temp #오른쪽 문이 열린 상태에서 문을 잠그는 동작�
 left_temp = "UNLOCKED"  # 왼쪽 문 상태 초기화
 right_temp = "UNLOCKED"  # 오른쪽 문 상태 초기화
 
+def get_left_temp():
+    return left_temp
+
+def get_right_temp():
+    return right_temp
+
 
 # execute_command를 제어하는 콜백 함수
 # -> 이 함수에서 시그널을 입력받고 처리하는 로직을 구성하면, 알아서 GUI에 연동이 됩니다.
@@ -17,12 +23,11 @@ def execute_command_callback(command, car_controller):
     global left_temp, right_temp
 
     commands = command.strip().split(' ')
-    brake_applied_in_line = False   
+    brake_applied_in_line = False
 
     for cmd in commands:
         cmd = cmd.strip()
 
-        print(cmd)
 
         if cmd == "ENGINE_BTN":
             # 현재 줄에서 브레이크가 적용된 상태에서만 엔진 동작
@@ -212,7 +217,7 @@ def file_input_thread(gui):
 
 
 
-    # 메인 실행
+# 메인 실행
 # -> 가급적 main login은 수정하지 마세요.
 # 테스트 코드 실행
 if __name__ == "__main__":
