@@ -73,7 +73,7 @@ class TestEngineBtn(unittest.TestCase):
         self.car_controller.accelerate()
 
         # When: 엔진 버튼 누름
-        execute_command_callback("BRAKE ENGINE_BTN", self.car_controller)
+        execute_command_callback("ENGINE_BTN", self.car_controller)
 
         # Then: 엔진 ON (변경 없음)
         self.assertTrue(self.car_controller.get_engine_status()) # 시동은 켜져있어야 함
