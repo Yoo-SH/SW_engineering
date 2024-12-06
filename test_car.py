@@ -275,7 +275,7 @@ class TestAccelerate(unittest.TestCase):
         execute_command_callback("ACCELERATE", self.car_controller)
 
         # Then: 속도 변화 없음
-        self.assertEqual(self.car.speed(), 0)
+        self.assertEqual(self.car_controller.get_speed(), 0)
 
     def test_accelerate_trunk_open(self):
         """트렁크 열린 상태에서 가속, 속도 제한(30) 테스트"""
@@ -289,13 +289,13 @@ class TestAccelerate(unittest.TestCase):
             execute_command_callback("ACCELERATE", self.car_controller)
 
         # Then: 속도 30 (제한)
-        self.assertEqual(self.car.speed, 30)
+        self.assertEqual(self.car_controller.get_speed(), 30)
 
         # When: 추가 가속 시도
         execute_command_callback("ACCELERATE", self.car_controller)
 
         # Then: 속도 30 유지
-        self.assertEqual(self.car.speed, 30)
+        self.assertEqual(self.car_controller.get_speed(), 30)
 
 
     def test_accelerate_trunk_closed(self):
@@ -316,7 +316,7 @@ class TestAccelerate(unittest.TestCase):
         execute_command_callback("ACCELERATE", self.car_controller)
 
         # Then: 속도 200 유지
-        self.assertEqual(self.car.speed, 200)
+        self.assertEqual(self.car_controller.get_speed(), 200)
         
 class TestBrake(unittest.TestCase): #감속 테스트 케이스
     def setUp(self):
@@ -626,7 +626,7 @@ class TestCarDoorOpenSystem(unittest.TestCase):
         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
 
     # test case 6 : 문이 UNLOCKED 일 때 RIGHT_DOOR_OPEN
-    def test_right_door_open_when_door_locked_with_closed_door(self):
+    def test_right_door_open_when_door_unlocked_with_closed_door(self):
         # Given
         self.car_controller.unlock_vehicle()
         self.car_controller.unlock_right_door()
