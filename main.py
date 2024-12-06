@@ -25,6 +25,8 @@ def execute_command_callback(command, car_controller):
     commands = command.strip().split(' ')
     brake_applied_in_line = False
 
+    length = len(commands)
+
     for cmd in commands:
         cmd = cmd.strip()
 
@@ -71,7 +73,6 @@ def execute_command_callback(command, car_controller):
                 if car_controller.get_speed() >= 30: # 현재 속도가 30km 이상이면 가속하지 않음
                     if not car_controller.get_trunk_status():
                         return
-
                 car_controller.accelerate() # 속도 +10
                 return
 
@@ -81,8 +82,12 @@ def execute_command_callback(command, car_controller):
                 brake_applied_in_line = True
                 continue
             elif car_controller.get_engine_status(): # 엔진이 켜진 경우
+                if length == 2:
+                    if commands[1] == "ACCELERATE":
+                        return
+                    car_controller.brake() # 속도 -10
                 car_controller.brake() # 속도 -10
-                return
+                continue
 
         elif cmd == "LOCK":
             if not car_controller.get_engine_status() and \
