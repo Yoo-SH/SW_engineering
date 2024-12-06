@@ -55,9 +55,9 @@ def execute_command_callback(command, car_controller):
 
                 # 2-2. 10km 초과 시 문 닫힘
                 if car_controller.get_speed() >= 10:
-                    if car_controller.get_left_door_status() == "Opened":
+                    if car_controller.get_left_door_status() == "OPEN":
                         car_controller.close_left_door()
-                    if car_controller.get_right_door_status() == "Opened":
+                    if car_controller.get_right_door_status() == "OPEN":
                         car_controller.close_right_door()
 
                 # 2-3. 현재 속도가 20 이상이면 문 잠금 상태 확인 후 잠금
