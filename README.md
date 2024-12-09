@@ -57,6 +57,23 @@
 ![스크린샷 2024-11-06 124006](https://github.com/user-attachments/assets/114e82ba-116c-4e2f-8501-9451c28fa282)
 
 
+## `git branch 전략`
+
+* `feature/*` 
+    - Develop 브랜치에서 분기하여 특정 기능을 개발.
+    - 브랜치 명명 규칙: feature/기능명 (예: feature/login).
+
+* `develop`
+    - Feature 브랜치에서 작업한 내용을 병합.
+    - 테스트 및 QA가 진행되는 브랜치.
+* `main`(보호된 branch) 
+    - Develop 브랜치에서 검증된 코드
+    - 직접 커밋을 금지하고, Pull Request(PR)로만 머지 가능.
+    - PR에서는 5명 이상의 동의가 필요하고, 누가 논의를 남기면 그 논의가 해결되기 전까지 merge가 불가능
+    - 태그(v1.0.0 형식)를 붙여 배포 기록을 관리.
+
+- 프로젝트 규모와 특성에 따른 CI/CD workflow 세팅은 생략.
+
 ## `git commit 규칙`
 
 |type|활용상황|예제|
