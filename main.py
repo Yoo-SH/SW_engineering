@@ -4,8 +4,6 @@ from car import Car
 from car_controller import CarController
 from gui import CarSimulatorGUI
 
-#테스트
-
 global left_temp #왼쪽 문이 열린 상태에서 문을 잠그는 동작을 저장하는 임시 변수
 global right_temp #오른쪽 문이 열린 상태에서 문을 잠그는 동작을 저장하는 임시 변수
 left_temp = "UNLOCKED"  # 왼쪽 문 상태 초기화
@@ -31,7 +29,6 @@ def execute_command_callback(command, car_controller):
 
     for cmd in commands:
         cmd = cmd.strip()
-
 
         if cmd == "ENGINE_BTN":
             # 현재 줄에서 브레이크가 적용된 상태에서만 엔진 동작
