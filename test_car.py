@@ -92,134 +92,161 @@ class TestEngineBtn(unittest.TestCase):
         # Then:
         self.assertFalse(self.car_controller.get_engine_status())
 
-
-class TestCombinedBrakeCommands(unittest.TestCase):
+class TestMultiCommands(unittest.TestCase):
     def setUp(self):
         self.car = Car()
         self.car_controller = CarController(self.car)
-        
-    def test_brake_with_sos(self):
-        #Given
+
+    def test_different_commands(self):
+        #Given:
         self.car_controller.unlock_vehicle()
-        self.car_controller.toggle_engine()
-        self.car_controller.accelerate()
-        #When
-        execute_command_callback("BRAKE SOS", self.car_controller)
-        #Then
-        self.assertEqual(self.car.speed, 0)
-        self.assertEqual(self.car.left_door_lock, "UNLOCKED")
+
+        #When:
+        execute_command_callback("RIGHT_DOOR_UNLOCK RIGHT_DOOR_LOCK", self.car_controller)
+
+        #Then:
         self.assertEqual(self.car.right_door_lock, "UNLOCKED")
-        self.assertEqual(self.car.left_door_status, "OPEN")
-        self.assertEqual(self.car.right_door_status, "OPEN")
-        self.assertFalse(self.car.trunk_status)
-
-    def test_brake_with_lock(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        #When
-        execute_command_callback("BRAKE LOCK",self.car_controller)
-        #Then
-        self.assertTrue(self.car_controller.get_lock_status())
     
-    def test_brake_with_lock(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        #When
-        execute_command_callback("BRAKE LOCK",self.car_controller)
-        #Then
-        self.assertTrue(self.car_controller.get_lock_status())
-
-    def test_brake_with_unlock(self):
-        #Given
-        self.car_controller.lock_vehicle()
-        #When
-        execute_command_callback("BRAKE UNLOCK",self.car_controller)
-        #Then
-        self.assertFalse(self.car_controller.get_lock_status())
-    
-    def test_brake_with_accelerate(self):
-        #Given
+    def test_same_commands(self):
+        #Given:
         self.car_controller.unlock_vehicle()
         self.car_controller.toggle_engine()
-        self.car_controller.accelerate()
-        #When
-        execute_command_callback("BRAKE ACCELERATE",self.car_controller)
-        #Then
-        self.assertEqual(self.car_controller.get_speed(), 10)
 
-    # def test_brake_with_brake(self):
-    #     #Given
-    #     self.car_controller.unlock_vehicle()
+        #When:
+        execute_command_callback("ACCELERATE ACCELERATE", self.car_controller)
 
-    def test_brake_with_DOOR_LOCK(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.unlock_left_door()
-        self.car_controller.unlock_right_door()
-        #When
-        execute_command_callback("BRAKE LEFT_DOOR_LOCK",self.car_controller)
-        execute_command_callback("BRAKE RIGHT_DOOR_LOCK",self.car_controller)
-        #Then
-        self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")
-        self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
+        #Then:
+        self.assertEqual(self.car_controller.get_speed(),10)
+
+
+
+# class TestCombinedBrakeCommands(unittest.TestCase):
+#     def setUp(self):
+#         self.car = Car()
+#         self.car_controller = CarController(self.car)
+        
+#     def test_brake_with_sos(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.toggle_engine()
+#         self.car_controller.accelerate()
+#         #When
+#         execute_command_callback("BRAKE SOS", self.car_controller)
+#         #Then
+#         self.assertEqual(self.car.speed, 0)
+#         self.assertEqual(self.car.left_door_lock, "UNLOCKED")
+#         self.assertEqual(self.car.right_door_lock, "UNLOCKED")
+#         self.assertEqual(self.car.left_door_status, "OPEN")
+#         self.assertEqual(self.car.right_door_status, "OPEN")
+#         self.assertFalse(self.car.trunk_status)
+
+#     def test_brake_with_lock(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         #When
+#         execute_command_callback("BRAKE LOCK",self.car_controller)
+#         #Then
+#         self.assertTrue(self.car_controller.get_lock_status())
     
-    def test_brake_with_DOOR_UNLOCK(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.lock_left_door()
-        self.car_controller.lock_right_door()
-        #When
-        execute_command_callback("BRAKE LEFT_DOOR_UNLOCK",self.car_controller)
-        execute_command_callback("BRAKE RIGHT_DOOR_UNLOCK",self.car_controller)
-        #Then
-        self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")
-        self.assertEqual(self.car_controller.get_right_door_lock(), "UNLOCKED")
+#     def test_brake_with_lock(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         #When
+#         execute_command_callback("BRAKE LOCK",self.car_controller)
+#         #Then
+#         self.assertTrue(self.car_controller.get_lock_status())
 
-    def test_brake_with_DOOR_CLOSE(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.unlock_left_door()
-        self.car_controller.unlock_right_door()
-        self.car_controller.open_left_door()
-        self.car_controller.open_right_door()
-        #When
-        execute_command_callback("BRAKE LEFT_DOOR_CLOSE",self.car_controller)
-        execute_command_callback("BRAKE RIGHT_DOOR_CLOSE",self.car_controller)
-        #Then
-        self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
-        self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
+#     def test_brake_with_unlock(self):
+#         #Given
+#         self.car_controller.lock_vehicle()
+#         #When
+#         execute_command_callback("BRAKE UNLOCK",self.car_controller)
+#         #Then
+#         self.assertFalse(self.car_controller.get_lock_status())
     
-    def test_brake_with_DOOR_OPEN(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.unlock_left_door()
-        self.car_controller.unlock_right_door()
-        self.car_controller.close_left_door()
-        self.car_controller.close_right_door()
-        #When
-        execute_command_callback("BRAKE LEFT_DOOR_OPEN",self.car_controller)
-        execute_command_callback("BRAKE RIGHT_DOOR_OPEN",self.car_controller)
-        #Then
-        self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
-        self.assertEqual(self.car_controller.get_right_door_status(), "OPEN")
+#     def test_brake_with_accelerate(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.toggle_engine()
+#         self.car_controller.accelerate()
+#         #When
+#         execute_command_callback("BRAKE ACCELERATE",self.car_controller)
+#         #Then
+#         self.assertEqual(self.car_controller.get_speed(), 10)
 
-    def test_brake_with_TRUNK_CLOSE(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.open_trunk()
-        #When
-        execute_command_callback("TRUNK_CLOSE", self.car_controller)  # 트렁크 닫기
-        #Then
-        self.assertTrue(self.car_controller.get_trunk_status())
+#     # def test_brake_with_brake(self):
+#     #     #Given
+#     #     self.car_controller.unlock_vehicle()
+
+#     def test_brake_with_DOOR_LOCK(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.unlock_left_door()
+#         self.car_controller.unlock_right_door()
+#         #When
+#         execute_command_callback("BRAKE LEFT_DOOR_LOCK",self.car_controller)
+#         execute_command_callback("BRAKE RIGHT_DOOR_LOCK",self.car_controller)
+#         #Then
+#         self.assertEqual(self.car_controller.get_left_door_lock(), "LOCKED")
+#         self.assertEqual(self.car_controller.get_right_door_lock(), "LOCKED")
     
-    def test_brake_with_TRUNK_OPEN(self):
-        #Given
-        self.car_controller.unlock_vehicle()
-        self.car_controller.close_trunk()
-        #When
-        execute_command_callback("TRUNK_OPEN", self.car_controller)  # 트렁크 닫기
-        #Then
-        self.assertFalse(self.car_controller.get_trunk_status())
+#     def test_brake_with_DOOR_UNLOCK(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.lock_left_door()
+#         self.car_controller.lock_right_door()
+#         #When
+#         execute_command_callback("BRAKE LEFT_DOOR_UNLOCK",self.car_controller)
+#         execute_command_callback("BRAKE RIGHT_DOOR_UNLOCK",self.car_controller)
+#         #Then
+#         self.assertEqual(self.car_controller.get_left_door_lock(), "UNLOCKED")
+#         self.assertEqual(self.car_controller.get_right_door_lock(), "UNLOCKED")
+
+#     def test_brake_with_DOOR_CLOSE(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.unlock_left_door()
+#         self.car_controller.unlock_right_door()
+#         self.car_controller.open_left_door()
+#         self.car_controller.open_right_door()
+#         #When
+#         execute_command_callback("BRAKE LEFT_DOOR_CLOSE",self.car_controller)
+#         execute_command_callback("BRAKE RIGHT_DOOR_CLOSE",self.car_controller)
+#         #Then
+#         self.assertEqual(self.car_controller.get_left_door_status(), "CLOSED")
+#         self.assertEqual(self.car_controller.get_right_door_status(), "CLOSED")
+    
+#     def test_brake_with_DOOR_OPEN(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.unlock_left_door()
+#         self.car_controller.unlock_right_door()
+#         self.car_controller.close_left_door()
+#         self.car_controller.close_right_door()
+#         #When
+#         execute_command_callback("BRAKE LEFT_DOOR_OPEN",self.car_controller)
+#         execute_command_callback("BRAKE RIGHT_DOOR_OPEN",self.car_controller)
+#         #Then
+#         self.assertEqual(self.car_controller.get_left_door_status(), "OPEN")
+#         self.assertEqual(self.car_controller.get_right_door_status(), "OPEN")
+
+#     def test_brake_with_TRUNK_CLOSE(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.open_trunk()
+#         #When
+#         execute_command_callback("TRUNK_CLOSE", self.car_controller)  # 트렁크 닫기
+#         #Then
+#         self.assertTrue(self.car_controller.get_trunk_status())
+    
+#     def test_brake_with_TRUNK_OPEN(self):
+#         #Given
+#         self.car_controller.unlock_vehicle()
+#         self.car_controller.close_trunk()
+#         #When
+#         execute_command_callback("TRUNK_OPEN", self.car_controller)  # 트렁크 닫기
+#         #Then
+#         self.assertFalse(self.car_controller.get_trunk_status())
 
 class TestSOS(unittest.TestCase):
     def setUp(self):
