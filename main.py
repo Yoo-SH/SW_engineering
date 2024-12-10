@@ -80,13 +80,8 @@ def execute_command_callback(command, car_controller):
             if not car_controller.get_engine_status(): # 엔진이 꺼진 경우
                 brake_applied_in_line = True
                 continue
-            elif car_controller.get_engine_status(): # 엔진이 켜진 경우
-                if length == 2:
-                    if commands[1] == "ACCELERATE":
-                        return
-                    car_controller.brake() # 속도 -10
-                car_controller.brake() # 속도 -10
-                continue
+            car_controller.brake()  # 속도 -10
+            return
 
         elif cmd == "LOCK":
             if not car_controller.get_engine_status() and \
@@ -128,6 +123,7 @@ def execute_command_callback(command, car_controller):
                 return
 
             car_controller.lock_left_door() # 왼쪽문 잠금
+            return
 
         elif cmd == "RIGHT_DOOR_LOCK":
             #차량 잠금이 열려있고, 오른쪽 문이 열린 상태에서 잠금 시도
@@ -143,6 +139,7 @@ def execute_command_callback(command, car_controller):
                 return
 
             car_controller.lock_right_door() # 오른쪽문 잠금
+            return
 
         elif cmd == "LEFT_DOOR_UNLOCK":
             #차량 잠금이 열려있고, 왼쪽 문이 열린 상태에서 잠금해제 시도
@@ -160,6 +157,7 @@ def execute_command_callback(command, car_controller):
                 return
 
             car_controller.unlock_left_door() # 왼쪽문 잠금해제
+            return
 
         elif cmd == "RIGHT_DOOR_UNLOCK":
             #차량 잠금이 열려있고, 오른쪽 문이 열린 상태에서 잠금해제 시도
@@ -177,33 +175,40 @@ def execute_command_callback(command, car_controller):
                 return
 
             car_controller.unlock_right_door() # 오른쪽 잠금해제
+            return
 
         elif cmd == "LEFT_DOOR_OPEN":
             if car_controller.get_left_door_lock() == "UNLOCKED" and car_controller.get_left_door_status() == "CLOSED": # 왼쪽문 잠금이 열린 경우
                 car_controller.open_left_door() # 왼쪽문 열기
                 left_temp = "UNLOCKED"
+            return
         elif cmd == "RIGHT_DOOR_OPEN":
             if car_controller.get_right_door_lock() == "UNLOCKED" and car_controller.get_right_door_status() == "CLOSED": # 오른쪽문 잠금이 열린 경우
                 car_controller.open_right_door() # 오른쪽문 열기
                 right_temp = "UNLOCKED"
+            return
         elif cmd == "LEFT_DOOR_CLOSE":
             if car_controller.get_left_door_status() == "OPEN": # 왼쪽문이 열린 경우
                 car_controller.close_left_door() # 왼쪽문 닫기
                 if left_temp == "LOCKED":
                     car_controller.lock_left_door()
+            return
         elif cmd == "RIGHT_DOOR_CLOSE":
             if car_controller.get_right_door_status() == "OPEN": # 오른쪽문이 열린 경우
                 car_controller.close_right_door() # 오른쪽문 닫기
                 if right_temp == "LOCKED":
                     car_controller.lock_right_door()
+            return
         elif cmd == "TRUNK_OPEN":
             if not car_controller.get_lock_status() and \
                 car_controller.get_trunk_status() == True and \
                     car_controller.get_speed() == 0: # 차량이 잠겨 있지 않은 상태이면서 트렁크가 닫혀 있는 경우
                 car_controller.open_trunk() # 트렁크 열기
+            return
         elif cmd == "TRUNK_CLOSE":
             if car_controller.get_trunk_status() == False: #차량이 잠긴 상태이면서 트렁크가 열려 있는 경우
                 car_controller.close_trunk() # 트렁크 닫기
+            return
 
 # 파일 경로를 입력받는 함수
 # -> 가급적 수정하지 마세요.
